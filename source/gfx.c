@@ -10,6 +10,11 @@
 #include "text.h"
 #include "costable.h"
 
+//TEMP, should not be here
+#define WATERBORDERCOLOR (u8[]){118, 181, 205}
+#define WATERCOLOR (u8[]){75, 157, 188}
+#define BGCOLOR (u8[]){205, 223, 228}
+
 u8* gspHeap;
 u32* gxCmdBuf;
 
@@ -90,10 +95,12 @@ u8* gfxGetFramebuffer(bool top, u16* width, u16* height)
 void gfxSwapBuffers()
 {
 	u32 regData;
+
 	GSPGPU_ReadHWRegs(NULL, 0x400478, (u32*)&regData, 4);
 	regData^=1;
 	currentBuffer=regData&1;
 	GSPGPU_WriteHWRegs(NULL, 0x400478, (u32*)&regData, 4);
+	GSPGPU_WriteHWRegs(NULL, 0x400578, (u32*)&regData, 4);
 }
 
 u32 cnt;
@@ -103,26 +110,19 @@ void gfxRenderFrame()
 	u8* topFramebuffer=topLeftFramebuffers[currentBuffer^1];
 	u8* subFramebuffer=subFramebuffers[currentBuffer^1];
 
-	int i, j;
-	for(i=1;i<400;i++)
-	{
-		for(j=1;j<240;j++)
-		{
-			u32 v=(j+i*240)*3;
-			topFramebuffer[v]=(pcCos(i+cnt)+4096)/32;
-			topFramebuffer[v+1]=(pcCos(j-256+cnt)+4096)/64;
-			topFramebuffer[v+2]=(pcCos(i+128-cnt)+4096)/32;
-		}
-	}
-	cnt++;
+	//top screen stuff
+	gfxFillColor(true, BGCOLOR);
+	gfxDrawWave(true, WATERBORDERCOLOR, 135, 15, cnt, 5);
+	gfxDrawWave(true, WATERCOLOR, 130, 15, cnt, 0);
+	gfxDrawText(true, "hello", 100, 100);
 
-	char str[256];
-	sprintf(str, "hello\n");
-	gfxDrawText(true, str, 0, 0);
-
+	//sub screen stuff
+	gfxFillColor(false, WATERCOLOR);
 	static u8 testSprite[48*48*3];
 	memset(testSprite, 0x80, 48*48*3);
 	gfxDrawSprite(false, testSprite, 48, 48, 100, 20);
+
+	cnt++;
 
 	GSPGPU_FlushDataCache(NULL, topFramebuffer, 0x46500);
 	GSPGPU_FlushDataCache(NULL, subFramebuffer, 0x38400);
@@ -135,7 +135,7 @@ void gfxDrawText(bool top, char* str, u16 x, u16 y)
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
 
-	drawString(fbAdr, str, y, x, fbHeight, fbWidth);
+	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
 }
 
 void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, u16 x, u16 y)
@@ -162,5 +162,68 @@ void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, u16 x, u16 y
 	for(j=yOffset; j<yOffset+heightDrawn; j++)
 	{
 		memcpy(&fbAdr[((x+xOffset)+(y+j+yOffset)*fbWidth)*3], &spriteData[((xOffset)+(j+yOffset)*width)*3], widthDrawn*3);
+	}
+}
+
+void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, u16 x, u16 y)
+{
+	if(!spriteData)return;
+
+	gfxDrawSprite(true, spriteData, width, height, x-240, y);
+	gfxDrawSprite(true, spriteData, width, height, x, y-40);
+}
+
+void gfxFillColor(bool top, u8 rgbColor[3])
+{
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+
+	//TODO : optimize; use GX command ?
+	int i;
+	for(i=0; i<fbWidth*fbHeight; i++)
+	{
+		*(fbAdr++)=rgbColor[2];
+		*(fbAdr++)=rgbColor[1];
+		*(fbAdr++)=rgbColor[0];
+	}
+}
+
+static inline u16 getWaveLevel(u16 j, u16 level, u16 amplitude, u16 t)
+{
+	return ((pcCos(j*4+t*8)*amplitude/8)/4096)+
+			((pcCos(j+t)*amplitude)/4096)+
+			level;
+}
+
+void gfxDrawWave(bool top, u8 rgbColor[3], u16 level, u16 amplitude, u16 t, u16 width)
+{
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+
+	u8 colorLine[fbWidth*3];
+
+	int j;
+	for(j=0; j<fbWidth; j++)
+	{
+		colorLine[j*3+0]=rgbColor[2];
+		colorLine[j*3+1]=rgbColor[1];
+		colorLine[j*3+2]=rgbColor[0];
+	}
+
+	if(width)
+	{
+		for(j=0; j<fbHeight; j++)
+		{
+			u16 waveLevel=getWaveLevel(j, level, amplitude, t);
+			memcpy(&fbAdr[(waveLevel-width)*3], colorLine, width*3);
+			fbAdr+=fbWidth*3;
+		}
+	}else{
+		for(j=0; j<fbHeight; j++)
+		{
+			u16 waveLevel=getWaveLevel(j, level, amplitude, t);
+			memcpy(fbAdr, colorLine, waveLevel*3);
+			fbAdr+=fbWidth*3;
+		}
 	}
 }

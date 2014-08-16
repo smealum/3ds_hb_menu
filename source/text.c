@@ -5,9 +5,6 @@
 #include "text.h"
 #include "font_bin.h"
 
-#define CHAR_SIZE_X (8)
-#define CHAR_SIZE_Y (8)
-
 const u8* font=font_bin;
 
 void drawCharacter(u8* fb, char c, u16 x, u16 y, u16 w, u16 h)
