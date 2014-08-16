@@ -3,6 +3,7 @@
 
 #include "menu.h"
 #include "gfx.h"
+#include "controls.h"
 
 void initMenu(menu_s* m, menuEntry_s* entries, u16 numEntries)
 {
@@ -22,8 +23,16 @@ void drawMenu(menu_s* m)
 	int i;
 	for(i=0; i<m->numEntries; i++)
 	{
-		drawMenuEntry(&m->entries[i], false, i*64, 16);
+		drawMenuEntry(&m->entries[i], false, 240-(i+1)*64+m->scrollLocation, 16);
 	}
+}
+
+void updateMenu(menu_s* m)
+{
+	if(!m)return;
+
+	if(keysHeld()&PAD_UP)m->scrollLocation+=2;
+	if(keysHeld()&PAD_DOWN)m->scrollLocation-=2;
 }
 
 void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData)
@@ -40,6 +49,7 @@ void drawMenuEntry(menuEntry_s* me, bool top, u16 x, u16 y)
 	if(!me)return;
 
 	//TODO : proper template sort of thing ?
+	gfxDrawRectangle(top, ENTRY_BGCOLOR, x, y, 64, 288);
 	gfxDrawSprite(top, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
-	gfxDrawText(top, me->name, x+16, y+8+ENTRY_ICON_HEIGHT);
+	gfxDrawText(top, me->name, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
 }

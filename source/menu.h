@@ -9,6 +9,8 @@
 #define ENTRY_ICON_HEIGHT (48)
 #define ENTRY_ICONSIZE (ENTRY_ICON_WIDTH*ENTRY_ICON_HEIGHT*3)
 
+#define ENTRY_BGCOLOR (u8[]){221, 221, 231}
+
 typedef struct
 {
 	char name[ENTRY_NAMELENGTH+1];
@@ -28,6 +30,7 @@ typedef struct
 //menu stuff
 void initMenu(menu_s* m, menuEntry_s* entries, u16 numEntries);
 void drawMenu(menu_s* m);
+void updateMenu(menu_s* m);
 
 //menu entry stuff
 void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData);

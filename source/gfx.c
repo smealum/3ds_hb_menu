@@ -114,7 +114,7 @@ void gfxDrawText(bool top, char* str, u16 x, u16 y)
 	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
 }
 
-void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, u16 x, u16 y)
+void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
@@ -141,7 +141,7 @@ void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, u16 x, u16 y
 	}
 }
 
-void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, u16 x, u16 y)
+void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
@@ -161,6 +161,37 @@ void gfxFillColor(bool top, u8 rgbColor[3])
 		*(fbAdr++)=rgbColor[2];
 		*(fbAdr++)=rgbColor[1];
 		*(fbAdr++)=rgbColor[0];
+	}
+}
+
+void gfxDrawRectangle(bool top, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height)
+{
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+
+	if(x+width<0 || x>=fbWidth)return;
+	if(y+height<0 || y>=fbHeight)return;
+
+	if(x<0){width+=x; x=0;}
+	if(y<0){height+=y; y=0;}
+	if(x+width>=fbWidth)width=fbWidth-x;
+	if(y+height>=fbHeight)height=fbHeight-y;
+
+	u8 colorLine[width*3];
+
+	int j;
+	for(j=0; j<width; j++)
+	{
+		colorLine[j*3+0]=rgbColor[2];
+		colorLine[j*3+1]=rgbColor[1];
+		colorLine[j*3+2]=rgbColor[0];
+	}
+
+	fbAdr+=fbWidth*3*y;
+	for(j=0; j<height; j++)
+	{
+		memcpy(&fbAdr[x*3], colorLine, width*3);
+		fbAdr+=fbWidth*3;
 	}
 }
 
