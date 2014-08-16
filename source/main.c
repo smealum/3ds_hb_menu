@@ -19,13 +19,17 @@
 
 menu_s menu;
 
+int debugValues[4];
+
 void renderFrame()
 {
 	//background stuff
 	drawBackground();
 
 	//top screen stuff
-	gfxDrawText(true, "hello", 100, 100);
+	char str[256];
+	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
+	gfxDrawText(true, str, 100, 100);
 
 	//menu stuff
 	drawMenu(&menu);
@@ -40,9 +44,9 @@ int main()
 	initControls();
 	initBackground();
 
-	menuEntry_s entry;
-	initMenuEntry(&entry, "Exploit installer", "Selecting this will install the payload to your gamecart !", (u8*)installerIcon_bin);
-	initMenu(&menu,&entry,1);
+	static menuEntry_s entries[8];
+	int i; for(i=0; i<8; i++)initMenuEntry(&entries[i], "Ninjhax installer", "Selecting this will install the payload to your gamecart !", (u8*)installerIcon_bin);
+	initMenu(&menu,entries,8);
 
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
