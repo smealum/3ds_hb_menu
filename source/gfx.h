@@ -8,7 +8,7 @@ void gfxInit();
 void gfxExit();
 
 //control stuff
-void gfxRenderFrame();
+void gfxFlushBuffers();
 void gfxSwapBuffers();
 
 //helper stuff

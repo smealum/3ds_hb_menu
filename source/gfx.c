@@ -10,11 +10,6 @@
 #include "text.h"
 #include "costable.h"
 
-//TEMP, should not be here
-#define WATERBORDERCOLOR (u8[]){118, 181, 205}
-#define WATERCOLOR (u8[]){75, 157, 188}
-#define BGCOLOR (u8[]){205, 223, 228}
-
 u8* gspHeap;
 u32* gxCmdBuf;
 
@@ -31,8 +26,17 @@ void gfxInit()
 	GSPGPU_AcquireRight(NULL, 0x0);
 	GSPGPU_SetLcdForceBlack(NULL, 0x0);
 
-	//setup framebuffers
-	topLeftFramebuffers[0]=(u8*)0x20000000;
+	//setup our gsp shared mem section
+	u8 threadID;
+	svc_createEvent(&gspEvent, 0x0);
+	GSPGPU_RegisterInterruptRelayQueue(NULL, gspEvent, 0x1, &gspSharedMemHandle, &threadID);
+	svc_mapMemoryBlock(gspSharedMemHandle, 0x10002000, 0x3, 0x10000000);
+
+	//map GSP heap
+	svc_controlMemory((u32*)&gspHeap, 0x0, 0x0, 0x02000000, 0x10003, 0x3);
+
+	//setup framebuffers on the GSP heap
+	topLeftFramebuffers[0]=(u8*)gspHeap+0xC000000;
 	topLeftFramebuffers[1]=topLeftFramebuffers[0]+0x46500;
 	subFramebuffers[0]=topLeftFramebuffers[1]+0x46500;
 	subFramebuffers[1]=subFramebuffers[0]+0x38400;
@@ -44,15 +48,6 @@ void gfxInit()
 	topLeftFramebuffers[1]-=0xC000000;
 	subFramebuffers[0]-=0xC000000;
 	subFramebuffers[1]-=0xC000000;
-
-	//setup our gsp shared mem section
-	u8 threadID;
-	svc_createEvent(&gspEvent, 0x0);
-	if(GSPGPU_RegisterInterruptRelayQueue(NULL, gspEvent, 0x1, &gspSharedMemHandle, &threadID))*(u32*)NULL=0xBABE0006;
-	if(svc_mapMemoryBlock(gspSharedMemHandle, 0x10002000, 0x3, 0x10000000))*(u32*)NULL=0xBABE0008;
-
-	//map GSP heap
-	if(svc_controlMemory((u32*)&gspHeap, 0x0, 0x0, 0x02000000, 0x10003, 0x3))*(u32*)NULL=0xBABE0007;
 
 	//wait until we can write stuff to it
 	svc_waitSynchronization1(gspEvent, 0x55bcb0);
@@ -92,6 +87,12 @@ u8* gfxGetFramebuffer(bool top, u16* width, u16* height)
 	}
 }
 
+void gfxFlushBuffers()
+{
+	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(true, NULL, NULL), 0x46500);
+	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(false, NULL, NULL), 0x38400);
+}
+
 void gfxSwapBuffers()
 {
 	u32 regData;
@@ -101,31 +102,6 @@ void gfxSwapBuffers()
 	currentBuffer=regData&1;
 	GSPGPU_WriteHWRegs(NULL, 0x400478, (u32*)&regData, 4);
 	GSPGPU_WriteHWRegs(NULL, 0x400578, (u32*)&regData, 4);
-}
-
-u32 cnt;
-
-void gfxRenderFrame()
-{
-	u8* topFramebuffer=topLeftFramebuffers[currentBuffer^1];
-	u8* subFramebuffer=subFramebuffers[currentBuffer^1];
-
-	//top screen stuff
-	gfxFillColor(true, BGCOLOR);
-	gfxDrawWave(true, WATERBORDERCOLOR, 135, 15, cnt, 5);
-	gfxDrawWave(true, WATERCOLOR, 130, 15, cnt, 0);
-	gfxDrawText(true, "hello", 100, 100);
-
-	//sub screen stuff
-	gfxFillColor(false, WATERCOLOR);
-	static u8 testSprite[48*48*3];
-	memset(testSprite, 0x80, 48*48*3);
-	gfxDrawSprite(false, testSprite, 48, 48, 100, 20);
-
-	cnt++;
-
-	GSPGPU_FlushDataCache(NULL, topFramebuffer, 0x46500);
-	GSPGPU_FlushDataCache(NULL, subFramebuffer, 0x38400);
 }
 
 void gfxDrawText(bool top, char* str, u16 x, u16 y)

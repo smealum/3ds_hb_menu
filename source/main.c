@@ -11,10 +11,25 @@
 #include <ctr/svc.h>
 
 #include "gfx.h"
+#include "background.h"
+
+void renderFrame()
+{
+	//background stuff
+	drawBackground();
+
+	//top screen stuff
+	gfxDrawText(true, "hello", 100, 100);
+
+	//sub screen stuff
+	static u8 testSprite[48*48*3];
+	memset(testSprite, 0x80, 48*48*3);
+	gfxDrawSprite(false, testSprite, 48, 48, 100, 20);
+}
 
 int main()
 {
-	if(initSrv())*(u32*)NULL=0xBABE0001;
+	initSrv();
 	
 	aptInit(APPID_APPLICATION);
 
@@ -22,12 +37,15 @@ int main()
 
 	hidInit(NULL);
 
+	initBackground();
+
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
 	{
 		u32 PAD=hidSharedMem[7];
 
-		gfxRenderFrame();
+		renderFrame();
+		gfxFlushBuffers();
 		gfxSwapBuffers();
 		svc_sleepThread(16666666);
 	}
