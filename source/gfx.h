@@ -1,7 +1,7 @@
 #ifndef GFX_H
 #define GFX_H
 
-#include <ctr/types.h>
+#include <3ds/types.h>
 
 //system stuff
 void gfxInit();

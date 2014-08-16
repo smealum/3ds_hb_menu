@@ -1,8 +1,8 @@
 #ifndef CONTROLS_H
 #define CONTROLS_H
 
-#include <ctr/types.h>
-#include <ctr/HID.h>
+#include <3ds/types.h>
+#include <3ds/HID.h>
 
 //system stuff
 void initControls();

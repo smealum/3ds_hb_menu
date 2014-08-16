@@ -1,7 +1,7 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <ctr/types.h>
+#include <3ds/types.h>
 
 #define ENTRY_NAMELENGTH (64)
 #define ENTRY_DESCLENGTH (64)

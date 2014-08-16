@@ -1,6 +1,6 @@
 #include <stdlib.h>
-#include <ctr/types.h>
-#include <ctr/HID.h>
+#include <3ds/types.h>
+#include <3ds/HID.h>
 
 #include "controls.h"
 

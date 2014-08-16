@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctr/types.h>
-#include <ctr/GSP.h>
-#include <ctr/GX.h>
-#include <ctr/svc.h>
+#include <3ds/types.h>
+#include <3ds/GSP.h>
+#include <3ds/GX.h>
+#include <3ds/svc.h>
 
 #include "gfx.h"
 #include "text.h"
@@ -28,12 +28,12 @@ void gfxInit()
 
 	//setup our gsp shared mem section
 	u8 threadID;
-	svc_createEvent(&gspEvent, 0x0);
+	svcCreateEvent(&gspEvent, 0x0);
 	GSPGPU_RegisterInterruptRelayQueue(NULL, gspEvent, 0x1, &gspSharedMemHandle, &threadID);
-	svc_mapMemoryBlock(gspSharedMemHandle, 0x10002000, 0x3, 0x10000000);
+	svcMapMemoryBlock(gspSharedMemHandle, 0x10002000, 0x3, 0x10000000);
 
 	//map GSP heap
-	svc_controlMemory((u32*)&gspHeap, 0x0, 0x0, 0x02000000, 0x10003, 0x3);
+	svcControlMemory((u32*)&gspHeap, 0x0, 0x0, 0x02000000, 0x10003, 0x3);
 
 	//setup framebuffers on the GSP heap
 	topLeftFramebuffers[0]=(u8*)gspHeap+0xC000000;
@@ -50,7 +50,7 @@ void gfxInit()
 	subFramebuffers[1]-=0xC000000;
 
 	//wait until we can write stuff to it
-	svc_waitSynchronization1(gspEvent, 0x55bcb0);
+	svcWaitSynchronization(gspEvent, 0x55bcb0);
 
 	//GSP shared mem : 0x2779F000
 	gxCmdBuf=(u32*)(0x10002000+0x800+threadID*0x200);
@@ -63,14 +63,14 @@ void gfxExit()
 	GSPGPU_UnregisterInterruptRelayQueue(NULL);
 
 	//unmap GSP shared mem
-	svc_unmapMemoryBlock(gspSharedMemHandle, 0x10002000);
-	svc_closeHandle(gspSharedMemHandle);
-	svc_closeHandle(gspEvent);
+	svcUnmapMemoryBlock(gspSharedMemHandle, 0x10002000);
+	svcCloseHandle(gspSharedMemHandle);
+	svcCloseHandle(gspEvent);
 	
 	gspExit();
 
 	//free GSP heap
-	svc_controlMemory((u32*)&gspHeap, (u32)gspHeap, 0x0, 0x02000000, MEMOP_FREE, 0x0);
+	svcControlMemory((u32*)&gspHeap, (u32)gspHeap, 0x0, 0x02000000, MEMOP_FREE, 0x0);
 }
 
 u8* gfxGetFramebuffer(bool top, u16* width, u16* height)
