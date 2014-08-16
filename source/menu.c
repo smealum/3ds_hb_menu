@@ -5,6 +5,8 @@
 #include "gfx.h"
 #include "controls.h"
 
+#define SCROLLING_SPEED (16) //lower is faster
+
 void initMenu(menu_s* m, menuEntry_s* entries, u16 numEntries)
 {
 	if(!m)return;
@@ -56,8 +58,8 @@ void updateMenu(menu_s* m)
 	debugValues[0]=target;
 	debugValues[1]=m->scrollLocation;
 
-	if(target>intToFpt(240-ENTRY_WIDTH))m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-target)/32;
-	if(target<0)m->scrollVelocity+=(intToFpt(0)-target)/32;
+	if(target>intToFpt(240-ENTRY_WIDTH) || m->selectedEntry==0)m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-target)/SCROLLING_SPEED;
+	if(target<0 || m->selectedEntry==m->numEntries-1)m->scrollVelocity+=(intToFpt(0)-target)/SCROLLING_SPEED;
 
 	m->scrollLocation+=m->scrollVelocity;
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
