@@ -38,17 +38,16 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	if(ret!=0)return ret;
 
 	ret=FSFILE_GetSize(fileHandle, &size);
-	if(ret!=0)return ret;
-	if(size>maxSize)return -2;
+	if(ret!=0)goto loadFileExit;
+	if(size>maxSize){ret=-2; goto loadFileExit;}
 
 	ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, dst, size);
-	if(ret!=0)return ret;
-	if(bytesRead<size)return -3;
+	if(ret!=0)goto loadFileExit;
+	if(bytesRead<size){ret=-3; goto loadFileExit;}
 
-	ret=FSFILE_Close(fileHandle);
-	if(ret!=0)return ret;
-
-	return 0;
+	loadFileExit:
+	FSFILE_Close(fileHandle);
+	return ret;
 }
 
 bool fileExists(char* path, FS_archive* archive)
@@ -118,5 +117,5 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 		}
 	}while(entriesRead);
 
-	svcCloseHandle(dirHandle);
+	FSDIR_Close(dirHandle);
 }

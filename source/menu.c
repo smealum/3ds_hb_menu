@@ -70,11 +70,19 @@ void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, u
 	addMenuEntry(m, me);
 }
 
-extern int debugValues[4];
-
-void updateMenu(menu_s* m)
+menuEntry_s* getMenuEntry(menu_s* m, u16 n)
 {
-	if(!m)return;
+	if(!m || n>=m->numEntries)return NULL;
+	menuEntry_s* me=m->entries;
+	while(n && me){me=me->next; n--;}
+	return me;
+}
+
+//return true when we're ready to boot something
+//(TEMP ?)
+bool updateMenu(menu_s* m)
+{
+	if(!m)return false;
 
 	//controls
 	s8 move=0;
@@ -88,10 +96,10 @@ void updateMenu(menu_s* m)
 	else if(move+m->selectedEntry>=m->numEntries)m->selectedEntry=m->numEntries-1;
 	else m->selectedEntry+=move;
 
+	if(keysDown()&PAD_A)return true;
+
 	//scrolling code
 	s32 target=intToFpt(getEntryLocation(m, m->selectedEntry));
-	debugValues[0]=target;
-	debugValues[1]=m->scrollLocation;
 
 	if(target>intToFpt(240-ENTRY_WIDTH) || (m->selectedEntry==0 && m->numEntries>3))
 		m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-target)/SCROLLING_SPEED;
@@ -100,6 +108,8 @@ void updateMenu(menu_s* m)
 
 	m->scrollLocation+=m->scrollVelocity;
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
+
+	return false;
 }
 
 void initEmptyMenuEntry(menuEntry_s* me)

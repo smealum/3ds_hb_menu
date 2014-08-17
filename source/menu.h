@@ -38,10 +38,11 @@ typedef struct
 //menu stuff
 void initMenu(menu_s* m);
 void drawMenu(menu_s* m);
-void updateMenu(menu_s* m);
+bool updateMenu(menu_s* m);
 void addMenuEntry(menu_s* m, menuEntry_s* me);
 void addMenuEntryCopy(menu_s* m, menuEntry_s* me);
 void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, u8* iconData);
+menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 
 //menu entry stuff
 void initEmptyMenuEntry(menuEntry_s* me);

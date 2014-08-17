@@ -60,17 +60,20 @@ void gfxInit()
 
 void gfxExit()
 {
-	GSPGPU_UnregisterInterruptRelayQueue(NULL);
+	//free GSP heap
+	svcControlMemory((u32*)&gspHeap, (u32)gspHeap, 0x0, 0x02000000, MEMOP_FREE, 0x0);
 
 	//unmap GSP shared mem
 	svcUnmapMemoryBlock(gspSharedMemHandle, 0x10002000);
+
+	GSPGPU_UnregisterInterruptRelayQueue(NULL);
+
 	svcCloseHandle(gspSharedMemHandle);
 	svcCloseHandle(gspEvent);
+
+	GSPGPU_ReleaseRight(NULL);
 	
 	gspExit();
-
-	//free GSP heap
-	svcControlMemory((u32*)&gspHeap, (u32)gspHeap, 0x0, 0x02000000, MEMOP_FREE, 0x0);
 }
 
 u8* gfxGetFramebuffer(bool top, u16* width, u16* height)

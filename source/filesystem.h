@@ -4,6 +4,8 @@
 #include <3ds/types.h>
 #include "menu.h"
 
+extern FS_archive sdmcArchive;
+
 //system stuff
 void initFilesystem(void);
 void exitFilesystem(void);

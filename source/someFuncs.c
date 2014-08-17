@@ -9,7 +9,8 @@ extern void* fake_heap_end;
 
 void __ctru_exit(int rc)
 {
-	for (;;);
+	u32 blockAddr;
+	svcControlMemory(&blockAddr, 0x08000000, 0x0, 0x1910000, MEMOP_FREE, 0x0);
 }
 
 void initSystem()

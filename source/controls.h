@@ -6,6 +6,7 @@
 
 //system stuff
 void initControls();
+void exitControls();
 void updateControls();
 
 //access stuff

@@ -20,7 +20,7 @@
 
 menu_s menu;
 
-int debugValues[4];
+int debugValues[100];
 
 void renderFrame()
 {
@@ -37,10 +37,38 @@ void renderFrame()
 	drawMenu(&menu);
 }
 
+//TEMP
+extern Handle aptStatusMutex, aptStatusEvent;
+extern Handle aptuHandle, aptLockHandle;
+extern NS_APPID currentAppId;
+
+void _aptExit()
+{
+	svcCloseHandle(aptStatusMutex);
+	svcCloseHandle(aptLockHandle);
+	svcCloseHandle(aptStatusEvent);
+}
+
+Result _aptInit(NS_APPID appID)
+{
+	Result ret=0;
+
+	//initialize APT stuff, escape load screen
+	srvGetServiceHandle(&aptuHandle, "APT:U");
+	if((ret=APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle)))return ret;
+	svcCloseHandle(aptuHandle);
+
+	currentAppId=appID;
+
+	svcCreateEvent(&aptStatusEvent, 0);
+	
+	return 0;
+}
+
 int main()
 {
 	srvInit();
-	aptInit(APPID_APPLICATION);
+	_aptInit(APPID_APPLICATION);
 	initFilesystem();
 	gfxInit();
 
@@ -54,19 +82,33 @@ int main()
 	while((status=aptGetStatus())!=APP_EXITING)
 	{
 		updateControls();
-		updateMenu(&menu);
+		if(updateMenu(&menu))break;
 		renderFrame();
 		gfxFlushBuffers();
 		gfxSwapBuffers();
-		// svcSleepThread(16666666);
 		svcSleepThread(8333333);
 	}
 
-	hidExit();
+	// cleanup whatever we have to cleanup
+	// TODO : call whatever needs to be called to free main heap
+	exitControls();
 	gfxExit();
 	exitFilesystem();
-	aptExit();
-	// void (*callBootloader)(Handle hb, Handle file)=(void*)0x000F0000;
-	// callBootloader(hbHandle, fileHandle);
+	_aptExit();
+	srvExit();
+
+	//open file that we're going to boot up
+	fsInit();
+	Handle fileHandle;
+	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry); //TODO : check that it's not NULL ?
+	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, me->executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	fsExit();
+
+	u32 blockAddr;
+	svcControlMemory(&blockAddr, 0x08000000, 0x0, 0x1910000, MEMOP_FREE, 0x0);
+
+	//jump to bootloader
+	void (*callBootloader)(Handle h, Handle file)=(void*)0x000F0000;
+	callBootloader(0x00000000, fileHandle);
 	return 0;
 }

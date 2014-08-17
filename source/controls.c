@@ -13,6 +13,11 @@ void initControls()
 	previousPAD=currentPAD=0;
 }
 
+void exitControls()
+{
+	hidExit();
+}
+
 void updateControls()
 {
 	previousPAD=currentPAD;
