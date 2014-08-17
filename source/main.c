@@ -14,8 +14,8 @@
 #include "menu.h"
 #include "background.h"
 #include "controls.h"
+#include "filesystem.h"
 
-#include "installerIcon_bin.h"
 #include "logo_bin.h"
 
 menu_s menu;
@@ -37,45 +37,18 @@ void renderFrame()
 	drawMenu(&menu);
 }
 
-void unicodeToChar(char* dst, u16* src, int max)
-{
-	if(!src || !dst)return;
-	int n=0;
-	while(*src && n<max-1){*(dst++)=(*(src++))&0xFF;n++;}
-	*dst=0x00;
-}
-
 int main()
 {
 	srvInit();
 	aptInit(APPID_APPLICATION);
-	fsInit();
+	initFilesystem();
 	gfxInit();
 
 	initControls();
 	initBackground();
 	
 	initMenu(&menu);
-
-	Handle dirHandle;
-	FS_path dirPath=FS_makePath(PATH_CHAR, "/");
-	FS_archive sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
-	debugValues[2]=FSUSER_OpenArchive(NULL, &sdmcArchive);
-	debugValues[3]=FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
-	
-	u32 entriesRead=0;
-	do
-	{
-		u32 entryBuffer[1024];
-		memset(entryBuffer,0,1024);
-		FSDIR_Read(dirHandle, &entriesRead, 1, (u16*)entryBuffer);
-		if(entriesRead)
-		{
-			static char str[0x80];
-			unicodeToChar(str, (u16*)entryBuffer, 0x80);
-			addMenuEntry(&menu, str, "test !", (u8*)installerIcon_bin);
-		}
-	}while(entriesRead);
+	scanHomebrewDirectory(&menu, "/3ds/");
 
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
@@ -85,12 +58,13 @@ int main()
 		renderFrame();
 		gfxFlushBuffers();
 		gfxSwapBuffers();
-		svcSleepThread(16666666);
+		// svcSleepThread(16666666);
+		svcSleepThread(8333333);
 	}
 
 	hidExit();
 	gfxExit();
-	fsExit();
+	exitFilesystem();
 	aptExit();
 	svcExitProcess();
 	return 0;

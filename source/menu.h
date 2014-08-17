@@ -24,7 +24,6 @@ typedef struct menuEntry_s
 	struct menuEntry_s* next;
 }menuEntry_s;
 
-//switch to a list ?
 typedef struct
 {
 	menuEntry_s* entries;
