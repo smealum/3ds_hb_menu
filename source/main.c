@@ -66,6 +66,7 @@ int main()
 	gfxExit();
 	exitFilesystem();
 	aptExit();
-	svcExitProcess();
+	// void (*callBootloader)(Handle hb, Handle file)=(void*)0x000F0000;
+	// callBootloader(hbHandle, fileHandle);
 	return 0;
 }

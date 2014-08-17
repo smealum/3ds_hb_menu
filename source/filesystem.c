@@ -6,6 +6,7 @@
 #include "installerIcon_bin.h"
 
 #include "filesystem.h"
+#include "utils.h"
 
 FS_archive sdmcArchive;
 
@@ -20,14 +21,6 @@ void exitFilesystem(void)
 {
 	FSUSER_CloseArchive(NULL, &sdmcArchive);
 	fsExit();
-}
-
-void unicodeToChar(char* dst, u16* src, int max)
-{
-	if(!src || !dst)return;
-	int n=0;
-	while(*src && n<max-1){*(dst++)=(*(src++))&0xFF;n++;}
-	*dst=0x00;
 }
 
 void addDirectoryToMenu(menu_s* m, char* path)
