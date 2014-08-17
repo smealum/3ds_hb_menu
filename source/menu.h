@@ -16,11 +16,12 @@
 #define fptToInt(v) ((v)>>10)
 #define intToFpt(v) ((v)<<10)
 
-typedef struct
+typedef struct menuEntry_s
 {
 	char name[ENTRY_NAMELENGTH+1];
 	char description[ENTRY_DESCLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
+	struct menuEntry_s* next;
 }menuEntry_s;
 
 //switch to a list ?
@@ -34,9 +35,10 @@ typedef struct
 }menu_s;
 
 //menu stuff
-void initMenu(menu_s* m, menuEntry_s* entries, u16 numEntries);
+void initMenu(menu_s* m);
 void drawMenu(menu_s* m);
 void updateMenu(menu_s* m);
+void addMenuEntry(menu_s* m, char* name, char* description, u8* iconData);
 
 //menu entry stuff
 void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData);

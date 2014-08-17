@@ -7,13 +7,12 @@
 
 #define SCROLLING_SPEED (16) //lower is faster
 
-void initMenu(menu_s* m, menuEntry_s* entries, u16 numEntries)
+void initMenu(menu_s* m)
 {
 	if(!m)return;
 
-	m->entries=malloc(sizeof(menuEntry_s)*numEntries);
-	memcpy(m->entries, entries, sizeof(menuEntry_s)*numEntries);
-	m->numEntries=numEntries;
+	m->entries=NULL;
+	m->numEntries=0;
 	m->selectedEntry=0;
 	m->scrollLocation=0;
 	m->scrollVelocity=0;
@@ -28,11 +27,28 @@ void drawMenu(menu_s* m)
 {
 	if(!m)return;
 
-	int i;
-	for(i=0; i<m->numEntries; i++)
+	menuEntry_s* me=m->entries;
+	int i=0;
+	while(me)
 	{
-		drawMenuEntry(&m->entries[i], false, getEntryLocation(m,i), 16, i==m->selectedEntry);
-	}
+		drawMenuEntry(me, false, getEntryLocation(m,i), 16, i==m->selectedEntry);
+		me=me->next;
+		i++;
+	}	
+}
+
+void addMenuEntry(menu_s* m, char* name, char* description, u8* iconData)
+{
+	if(!m || !name || !description || !iconData)return;
+
+	menuEntry_s* me=malloc(sizeof(menuEntry_s));
+	if(!me)return;
+
+	initMenuEntry(me, name, description, iconData);
+	me->next=m->entries;
+
+	m->entries=me;
+	m->numEntries++;
 }
 
 extern int debugValues[4];

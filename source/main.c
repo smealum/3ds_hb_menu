@@ -54,6 +54,8 @@ int main()
 
 	initControls();
 	initBackground();
+	
+	initMenu(&menu);
 
 	Handle dirHandle;
 	FS_path dirPath=FS_makePath(PATH_CHAR, "/");
@@ -61,25 +63,19 @@ int main()
 	debugValues[2]=FSUSER_OpenArchive(NULL, &sdmcArchive);
 	debugValues[3]=FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
 	
-	static menuEntry_s entries[8];
-
 	u32 entriesRead=0;
-	int i=0;
 	do
 	{
 		u32 entryBuffer[1024];
 		memset(entryBuffer,0,1024);
 		FSDIR_Read(dirHandle, &entriesRead, 1, (u16*)entryBuffer);
-		if(entriesRead && i<8)
+		if(entriesRead)
 		{
 			static char str[0x80];
 			unicodeToChar(str, (u16*)entryBuffer, 0x80);
-			initMenuEntry(&entries[i], str, "test !", (u8*)installerIcon_bin);
-			i++;
+			addMenuEntry(&menu, str, "test !", (u8*)installerIcon_bin);
 		}
 	}while(entriesRead);
-
-	initMenu(&menu,entries,8);
 
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
