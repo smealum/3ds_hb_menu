@@ -37,20 +37,49 @@ void renderFrame()
 	drawMenu(&menu);
 }
 
+void unicodeToChar(char* dst, u16* src, int max)
+{
+	if(!src || !dst)return;
+	int n=0;
+	while(*src && n<max-1){*(dst++)=(*(src++))&0xFF;n++;}
+	*dst=0x00;
+}
+
 int main()
 {
 	srvInit();
 	aptInit(APPID_APPLICATION);
+	fsInit();
 	gfxInit();
 
 	initControls();
 	initBackground();
 
+	Handle dirHandle;
+	FS_path dirPath=FS_makePath(PATH_CHAR, "/");
+	FS_archive sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	debugValues[2]=FSUSER_OpenArchive(NULL, &sdmcArchive);
+	debugValues[3]=FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
+	
 	static menuEntry_s entries[8];
-	int i; for(i=0; i<8; i++)initMenuEntry(&entries[i], "Ninjhax installer", "Selecting this will install the payload to your gamecart !", (u8*)installerIcon_bin);
-	initMenu(&menu,entries,8);
 
-	srvGetServiceHandle((Handle*)&debugValues[2], "fs:USER");
+	u32 entriesRead=0;
+	int i=0;
+	do
+	{
+		u32 entryBuffer[1024];
+		memset(entryBuffer,0,1024);
+		FSDIR_Read(dirHandle, &entriesRead, 1, (u16*)entryBuffer);
+		if(entriesRead && i<8)
+		{
+			static char str[0x80];
+			unicodeToChar(str, (u16*)entryBuffer, 0x80);
+			initMenuEntry(&entries[i], str, "test !", (u8*)installerIcon_bin);
+			i++;
+		}
+	}while(entriesRead);
+
+	initMenu(&menu,entries,8);
 
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
@@ -65,6 +94,7 @@ int main()
 
 	hidExit();
 	gfxExit();
+	fsExit();
 	aptExit();
 	svcExitProcess();
 	return 0;
