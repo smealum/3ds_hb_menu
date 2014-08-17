@@ -137,7 +137,7 @@ void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y
 	int j;
 	for(j=yOffset; j<yOffset+heightDrawn; j++)
 	{
-		memcpy(&fbAdr[((x+xOffset)+(y+j+yOffset)*fbWidth)*3], &spriteData[((xOffset)+(j+yOffset)*width)*3], widthDrawn*3);
+		memcpy(&fbAdr[((x+xOffset)+(y+j)*fbWidth)*3], &spriteData[((xOffset)+(j)*width)*3], widthDrawn*3);
 	}
 }
 
@@ -147,6 +147,50 @@ void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 
 	gfxDrawSprite(true, spriteData, width, height, x-240, y);
 	gfxDrawSprite(true, spriteData, width, height, x, y-40);
+}
+
+void gfxDrawSpriteAlpha(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
+{
+	if(!spriteData)return;
+
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+
+	if(x+width<0 || x>=fbWidth)return;
+	if(y+height<0 || y>=fbHeight)return;
+
+	u16 xOffset=0, yOffset=0;
+	u16 widthDrawn=width, heightDrawn=height;
+
+	if(x<0)xOffset=-x;
+	if(y<0)yOffset=-y;
+	if(x+width>=fbWidth)widthDrawn=fbWidth-x;
+	if(y+height>=fbHeight)heightDrawn=fbHeight-y;
+	widthDrawn-=xOffset;
+	heightDrawn-=yOffset;
+
+	//TODO : optimize
+	fbAdr+=(y+yOffset)*fbWidth*3;
+	spriteData+=yOffset*width*4;
+	int j, i;
+	for(j=yOffset; j<yOffset+heightDrawn; j++)
+	{
+		u8* fbd=&fbAdr[(x+xOffset)*3];
+		u8* data=&spriteData[(xOffset)*4];
+		for(i=xOffset; i<xOffset+widthDrawn; i++)
+		{
+			if(data[3])
+			{
+				fbd[0]=data[0];
+				fbd[1]=data[1];
+				fbd[2]=data[2];
+			}
+			fbd+=3;
+			data+=4;
+		}
+		fbAdr+=fbWidth*3;
+		spriteData+=width*4;
+	}
 }
 
 void gfxFillColor(bool top, u8 rgbColor[3])

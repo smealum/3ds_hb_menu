@@ -16,6 +16,7 @@
 #include "controls.h"
 
 #include "installerIcon_bin.h"
+#include "logo_bin.h"
 
 menu_s menu;
 
@@ -30,6 +31,7 @@ void renderFrame()
 	char str[256];
 	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	gfxDrawText(true, str, 100, 100);
+	gfxDrawSpriteAlpha(true, (u8*)logo_bin, 182, 245, 28, 80);
 
 	//menu stuff
 	drawMenu(&menu);
@@ -47,6 +49,8 @@ int main()
 	static menuEntry_s entries[8];
 	int i; for(i=0; i<8; i++)initMenuEntry(&entries[i], "Ninjhax installer", "Selecting this will install the payload to your gamecart !", (u8*)installerIcon_bin);
 	initMenu(&menu,entries,8);
+
+	srvGetServiceHandle((Handle*)&debugValues[2], "fs:USER");
 
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)

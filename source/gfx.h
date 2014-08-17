@@ -17,6 +17,7 @@ u8* gfxGetFramebuffer(bool top, u16* width, u16* height);
 //rendering stuff
 void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y);
 void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, s16 x, s16 y);
+void gfxDrawSpriteAlpha(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y);
 void gfxDrawText(bool top, char* str, u16 x, u16 y);
 void gfxFillColor(bool top, u8 rgbColor[3]);
 void gfxDrawRectangle(bool top, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height);
