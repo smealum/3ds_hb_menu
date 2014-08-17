@@ -36,7 +36,9 @@ typedef struct
 	smdhSettings_s settings;
 	u8 reserved[0x8];
 	u8 smallIconData[0x480];
-	u8 bigIconData[0x1200];
+	u16 bigIconData[0x900];
 }smdh_s;
+
+int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData);
 
 #endif

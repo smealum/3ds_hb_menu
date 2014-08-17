@@ -37,7 +37,28 @@ void drawMenu(menu_s* m)
 	}	
 }
 
-void addMenuEntry(menu_s* m, char* name, char* description, u8* iconData)
+void addMenuEntry(menu_s* m, menuEntry_s* me)
+{
+	if(!m || !me)return;
+
+	me->next=m->entries;
+	m->entries=me;
+	m->numEntries++;
+}
+
+void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
+{
+	if(!m || !me)return;
+
+	menuEntry_s* me2=malloc(sizeof(menuEntry_s));
+	if(!me2)return;
+
+	memcpy(me2, me, sizeof(menuEntry_s));
+	
+	addMenuEntry(m, me2);
+}
+
+void createMenuEntry(menu_s* m, char* name, char* description, u8* iconData)
 {
 	if(!m || !name || !description || !iconData)return;
 
@@ -45,10 +66,8 @@ void addMenuEntry(menu_s* m, char* name, char* description, u8* iconData)
 	if(!me)return;
 
 	initMenuEntry(me, name, description, iconData);
-	me->next=m->entries;
-
-	m->entries=me;
-	m->numEntries++;
+	
+	addMenuEntry(m, me);
 }
 
 extern int debugValues[4];
@@ -83,9 +102,21 @@ void updateMenu(menu_s* m)
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
 }
 
+void initEmptyMenuEntry(menuEntry_s* me)
+{
+	if(!me)return;
+
+	me->name[0]=0x00;
+	me->description[0]=0x00;
+
+	me->next=NULL;
+}
+
 void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData)
 {
 	if(!me)return;
+
+	initEmptyMenuEntry(me);
 
 	strncpy(me->name, name, ENTRY_NAMELENGTH);
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
