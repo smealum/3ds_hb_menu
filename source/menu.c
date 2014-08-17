@@ -58,14 +58,14 @@ void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
 	addMenuEntry(m, me2);
 }
 
-void createMenuEntry(menu_s* m, char* name, char* description, u8* iconData)
+void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, u8* iconData)
 {
 	if(!m || !name || !description || !iconData)return;
 
 	menuEntry_s* me=malloc(sizeof(menuEntry_s));
 	if(!me)return;
 
-	initMenuEntry(me, name, description, iconData);
+	initMenuEntry(me, execPath, name, description, iconData);
 	
 	addMenuEntry(m, me);
 }
@@ -108,16 +108,18 @@ void initEmptyMenuEntry(menuEntry_s* me)
 
 	me->name[0]=0x00;
 	me->description[0]=0x00;
+	me->executablePath[0]=0x00;
 
 	me->next=NULL;
 }
 
-void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData)
+void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData)
 {
 	if(!me)return;
 
 	initEmptyMenuEntry(me);
 
+	strncpy(me->executablePath, execPath, ENTRY_PATHLENGTH);
 	strncpy(me->name, name, ENTRY_NAMELENGTH);
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
@@ -131,4 +133,5 @@ void drawMenuEntry(menuEntry_s* me, bool top, u16 x, u16 y, bool selected)
 	gfxDrawRectangle(top, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
 	gfxDrawSprite(top, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
 	gfxDrawText(top, me->name, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
+	gfxDrawText(top, me->executablePath, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
 }

@@ -3,6 +3,7 @@
 
 #include <3ds/types.h>
 
+#define ENTRY_PATHLENGTH (128)
 #define ENTRY_NAMELENGTH (64)
 #define ENTRY_DESCLENGTH (128)
 #define ENTRY_ICON_WIDTH (48)
@@ -18,6 +19,7 @@
 
 typedef struct menuEntry_s
 {
+	char executablePath[ENTRY_PATHLENGTH+1];
 	char name[ENTRY_NAMELENGTH+1];
 	char description[ENTRY_DESCLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
@@ -39,11 +41,11 @@ void drawMenu(menu_s* m);
 void updateMenu(menu_s* m);
 void addMenuEntry(menu_s* m, menuEntry_s* me);
 void addMenuEntryCopy(menu_s* m, menuEntry_s* me);
-void createMenuEntry(menu_s* m, char* name, char* description, u8* iconData);
+void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, u8* iconData);
 
 //menu entry stuff
-void initMenuEntry(menuEntry_s* me, char* name, char* description, u8* iconData);
 void initEmptyMenuEntry(menuEntry_s* me);
+void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData);
 void drawMenuEntry(menuEntry_s* me, bool top, u16 x, u16 y, bool selected);
 
 #endif

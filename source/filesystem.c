@@ -51,25 +51,45 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	return 0;
 }
 
+bool fileExists(char* path, FS_archive* archive)
+{
+	if(!path || !archive)return false;
+
+	Result ret;
+	Handle fileHandle;
+
+	ret=FSUSER_OpenFile(NULL, &fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	if(ret!=0)return false;
+
+	ret=FSFILE_Close(fileHandle);
+	if(ret!=0)return false;
+
+	return true;
+}
+
 extern int debugValues[4];
 
 void addDirectoryToMenu(menu_s* m, char* path)
 {
 	static menuEntry_s tmpEntry;
 	static smdh_s tmpSmdh;
+	static char execPath[128];
+	static char iconPath[128];
 
-	static char str[1024];
-	snprintf(str, 1024, "%s/icon.bin", path);
+	snprintf(execPath, 128, "%s/boot.3dsx", path);
+	if(!fileExists(execPath, &sdmcArchive))return;
 
-	int ret=loadFile(str, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
-
+	snprintf(iconPath, 128, "%s/icon.bin", path);
+	int ret=loadFile(iconPath, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
+	
 	if(!ret)
 	{
 		initEmptyMenuEntry(&tmpEntry);
 		ret=extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.iconData);
+		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
 	}
 
-	if(ret)initMenuEntry(&tmpEntry, path, "test !", (u8*)installerIcon_bin);
+	if(ret)initMenuEntry(&tmpEntry, execPath, path, "", (u8*)installerIcon_bin);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }
