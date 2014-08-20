@@ -2,8 +2,6 @@
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 
-CTRULIB=c:\devkitpro\ctrulib\libctru
-
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
@@ -34,11 +32,10 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-ARCH	:=	-marm
+ARCH	:=	-march=armv6k -mtune=mpcore
 
 CFLAGS	:=	-g -Wall -O2 -mthumb-interwork -save-temps \
-			-mcpu=mpcore -mtune=mpcore -fomit-frame-pointer \
-			-mfpu=vfp -ffast-math -mword-relocations \
+			-fomit-frame-pointer -ffast-math -mword-relocations \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
@@ -113,7 +110,7 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(TARGET).3dhb $(TARGET).elf
+	@rm -fr $(BUILD) $(TARGET).3dsx $(TARGET).elf
  
  
 #---------------------------------------------------------------------------------
