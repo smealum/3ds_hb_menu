@@ -223,6 +223,15 @@ Result _aptInit(NS_APPID appID)
 	return 0;
 }
 
+extern void (*__system_retAddr)(void);
+static Handle hbHandle;
+static void launchFile(void)
+{
+	//jump to bootloader
+	void (*callBootloader)(Handle h, Handle file)=(void*)0x000F0000;
+	callBootloader(0x00000000, hbHandle);
+}
+
 int main()
 {
 	srvInit();
@@ -287,16 +296,11 @@ int main()
 
 	//open file that we're going to boot up
 	fsInit();
-	Handle fileHandle;
 	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry); //TODO : check that it's not NULL ?
-	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, me->executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &hbHandle, sdmcArchive, FS_makePath(PATH_CHAR, me->executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	fsExit();
 
-	u32 blockAddr;
-	svcControlMemory(&blockAddr, 0x08000000, 0x0, 0x1910000, MEMOP_FREE, 0x0);
-
-	//jump to bootloader
-	void (*callBootloader)(Handle h, Handle file)=(void*)0x000F0000;
-	callBootloader(0x00000000, fileHandle);
+	// Override return address to homebrew booting code
+	__system_retAddr = launchFile;
 	return 0;
 }

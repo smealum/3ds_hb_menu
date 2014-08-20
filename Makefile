@@ -44,7 +44,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) \
-			-Wl,-d,-q,--use-blx,-Map,$(TARGET).map
+			-Wl,-d,-q,-Map,$(TARGET).map
 
 LIBS	:= -lctru
 
