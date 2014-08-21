@@ -16,7 +16,6 @@
 #include "gfx.h"
 #include "menu.h"
 #include "background.h"
-#include "controls.h"
 #include "filesystem.h"
 
 #include "logo_bin.h"
@@ -238,8 +237,8 @@ int main()
 	_aptInit(APPID_APPLICATION);
 	initFilesystem();
 	gfxInit();
+	hidInit(NULL);
 
-	initControls();
 	initBackground();
 	
 	initMenu(&menu);
@@ -247,48 +246,33 @@ int main()
 
 	srand(svcGetSystemTick());
 
-	updateControls();
-	if((keysDown() & PAD_L) || (keysDown() & PAD_R))
+	hidScanInput();
+	if((hidKeysDown() & KEY_L) || (hidKeysDown() & KEY_R))
 	{
 		brewMode = true;
 	}
 
 
 	APP_STATUS status;
-	if(brewMode)
+	while((status=aptGetStatus())!=APP_EXITING)
 	{
-		while((status=aptGetStatus())!=APP_EXITING)
-		{
-			ACU_GetWifiStatus(acHandle, &wifiStatus);
-			PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
-			PTMU_GetBatteryChargeState(ptmHandle, &charging);
-			updateControls();
-			if(updateMenu(&menu))break;
+		ACU_GetWifiStatus(acHandle, &wifiStatus);
+		PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
+		PTMU_GetBatteryChargeState(ptmHandle, &charging);
+		hidScanInput();
+		if(updateMenu(&menu))break;
+		if (brewMode)
 			renderFrameBrew();
-			gfxFlushBuffers();
-			gfxSwapBuffers();
-			svcSleepThread(8333333);
-		}
-	}
-	else
-	{
-		while((status=aptGetStatus())!=APP_EXITING)
-		{
-			ACU_GetWifiStatus(acHandle, &wifiStatus);
-			PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
-			PTMU_GetBatteryChargeState(ptmHandle, &charging);
-			updateControls();
-			if(updateMenu(&menu))break;
+		else
 			renderFrame();
-			gfxFlushBuffers();
-			gfxSwapBuffers();
-			svcSleepThread(8333333);
-		}
+		gfxFlushBuffers();
+		gfxSwapBuffers();
+		svcSleepThread(8333333);
 	}
 
 	// cleanup whatever we have to cleanup
 	// TODO : call whatever needs to be called to free main heap
-	exitControls();
+	hidExit();
 	gfxExit();
 	exitFilesystem();
 	_aptExit();

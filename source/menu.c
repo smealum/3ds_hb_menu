@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
+#include <3ds/types.h>
+#include <3ds/HID.h>
 
 #include "menu.h"
 #include "gfx.h"
-#include "controls.h"
 
 #define SCROLLING_SPEED (16) //lower is faster
 
@@ -87,16 +88,16 @@ bool updateMenu(menu_s* m)
 	//controls
 	s8 move=0;
 
-	if(keysDown()&PAD_DOWN)move++;
-	if(keysDown()&PAD_UP)move--;
-	if(keysDown()&PAD_RIGHT)move+=4;
-	if(keysDown()&PAD_LEFT)move-=4;
+	if(hidKeysDown()&KEY_DOWN)move++;
+	if(hidKeysDown()&KEY_UP)move--;
+	if(hidKeysDown()&KEY_RIGHT)move+=4;
+	if(hidKeysDown()&KEY_LEFT)move-=4;
 
 	if(move+m->selectedEntry<0)m->selectedEntry=0;
 	else if(move+m->selectedEntry>=m->numEntries)m->selectedEntry=m->numEntries-1;
 	else m->selectedEntry+=move;
 
-	if(keysDown()&PAD_A)return true;
+	if(hidKeysDown()&KEY_A)return true;
 
 	//scrolling code
 	s32 target=intToFpt(getEntryLocation(m, m->selectedEntry));
