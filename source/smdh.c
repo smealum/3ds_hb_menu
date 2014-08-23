@@ -9,9 +9,9 @@ u8 tileOrder[]={0,1,8,9,2,3,10,11,16,17,24,25,18,19,26,27,4,5,12,13,6,7,14,15,20
 
 static inline void putPixel565(u8* dst, u8 x, u8 y, u16 v)
 {
-	dst[((48-y)+x*48)*3+0]=(v&0x1F)<<3;
-	dst[((48-y)+x*48)*3+1]=((v>>5)&0x3F)<<2;
-	dst[((48-y)+x*48)*3+2]=((v>>11)&0x1F)<<3;
+	dst[((47-y)+x*48)*3+0]=(v&0x1F)<<3;
+	dst[((47-y)+x*48)*3+1]=((v>>5)&0x3F)<<2;
+	dst[((47-y)+x*48)*3+2]=((v>>11)&0x1F)<<3;
 }
 
 int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData)

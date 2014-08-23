@@ -34,8 +34,8 @@ INCLUDES	:=	include
 #---------------------------------------------------------------------------------
 ARCH	:=	-march=armv6k -mtune=mpcore
 
-CFLAGS	:=	-g -Wall -O2 -mthumb-interwork -save-temps \
-			-fomit-frame-pointer -ffast-math -mword-relocations \
+CFLAGS	:=	-g -Wall -O2 -mword-relocations -save-temps \
+			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
@@ -44,7 +44,7 @@ CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
 ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) \
-			-Wl,-d,-q,-Map,$(TARGET).map
+			-Wl,-d,-q,--use-blx,-Map,$(TARGET).map
 
 LIBS	:= -lctru
 
