@@ -160,49 +160,6 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawMenu(&menu);
 }
 
-//TEMP
-extern Handle aptStatusMutex, aptStatusEvent;
-extern Handle aptuHandle, aptLockHandle;
-Handle acHandle, ptmHandle;
-extern NS_APPID currentAppId;
-
-void _aptExit()
-{
-	svcCloseHandle(ptmHandle);
-	svcCloseHandle(acHandle);
-	svcCloseHandle(aptStatusMutex);
-	svcCloseHandle(aptLockHandle);
-	svcCloseHandle(aptStatusEvent);
-}
-
-Result _aptInit(NS_APPID appID)
-{
-	int i = 0;
-	for(i = 0;i < BUBBLE_COUNT;i += 1)
-	{
-		bubbles[i].x = rand() % 400;
-		bubbles[i].y = rand() % 240;
-		bubbles[i].wobble = ((rand() % 20) - 10) << 8;
-		bubbles[i].fade = 15;
-	}
-
-	Result ret=0;
-
-	//initialize APT stuff, escape load screen
-	srvGetServiceHandle(&aptuHandle, "APT:U");
-	if((ret=APT_GetLockHandle(&aptuHandle, 0x0, &aptLockHandle)))return ret;
-	svcCloseHandle(aptuHandle);
-
-	srvGetServiceHandle(&acHandle, "ac:u");
-	srvGetServiceHandle(&ptmHandle, "ptm:u");
-
-	currentAppId=appID;
-
-	svcCreateEvent(&aptStatusEvent, 0);
-	
-	return 0;
-}
-
 extern void (*__system_retAddr)(void);
 static Handle hbHandle;
 static void launchFile(void)
@@ -214,49 +171,66 @@ static void launchFile(void)
 
 bool secretCode(void)
 {
-  static const u32 secret_code[] =
-  {
-    KEY_UP,
-    KEY_UP,
-    KEY_DOWN,
-    KEY_DOWN,
-    KEY_LEFT,
-    KEY_RIGHT,
-    KEY_LEFT,
-    KEY_RIGHT,
-    KEY_B,
-    KEY_A,
-  };
+	static const u32 secret_code[] =
+	{
+		KEY_UP,
+		KEY_UP,
+		KEY_DOWN,
+		KEY_DOWN,
+		KEY_LEFT,
+		KEY_RIGHT,
+		KEY_LEFT,
+		KEY_RIGHT,
+		KEY_B,
+		KEY_A,
+	};
 
-  static u32 state   = 0;
-  static u32 timeout = 30;
-  u32 down = hidKeysDown();
+	static u32 state   = 0;
+	static u32 timeout = 30;
+	u32 down = hidKeysDown();
 
-  if(down & secret_code[state])
-  {
-    ++state;
-    timeout = 30;
+	if(down & secret_code[state])
+	{
+		++state;
+		timeout = 30;
 
-    if(state == sizeof(secret_code)/sizeof(secret_code[0]))
-    {
-      state = 0;
-      return true;
-    }
-  }
+		if(state == sizeof(secret_code)/sizeof(secret_code[0]))
+		{
+			state = 0;
+			return true;
+		}
+	}
 
-  if(timeout > 0 && --timeout == 0)
-    state = 0;
+	if(timeout > 0 && --timeout == 0)
+	state = 0;
 
-  return false;
+	return false;
 }
+
+//TEMP until we move this to ctrulib...
+Handle acHandle, ptmHandle;
 
 int main()
 {
 	srvInit();
-	_aptInit(APPID_APPLICATION);
+	aptInit();
 	initFilesystem();
 	gfxInit();
 	hidInit(NULL);
+
+	aptSetupEventHandler();
+
+	int i = 0;
+	for(i = 0;i < BUBBLE_COUNT;i += 1)
+	{
+		bubbles[i].x = rand() % 400;
+		bubbles[i].y = rand() % 240;
+		bubbles[i].wobble = ((rand() % 20) - 10) << 8;
+		bubbles[i].fade = 15;
+	}
+
+	srvGetServiceHandle(&acHandle, "ac:u");
+	srvGetServiceHandle(&ptmHandle, "ptm:u");
 
 	initBackground();
 	
@@ -268,29 +242,43 @@ int main()
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
 	{
-		ACU_GetWifiStatus(acHandle, &wifiStatus);
-		PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
-		PTMU_GetBatteryChargeState(ptmHandle, &charging);
-		hidScanInput();
-		if(secretCode())
-			brewMode = true;
-		else if(updateMenu(&menu))
-			break;
-		if (brewMode)
-			renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
-		else
-			renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
-		gfxFlushBuffers();
-		gfxSwapBuffers();
+		if(status == APP_RUNNING)
+		{
+			ACU_GetWifiStatus(acHandle, &wifiStatus);
+			PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
+			PTMU_GetBatteryChargeState(ptmHandle, &charging);
+			hidScanInput();
+			if(secretCode())
+				brewMode = true;
+			else if(updateMenu(&menu))
+				break;
+			if (brewMode)
+				renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
+			else
+				renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+			gfxFlushBuffers();
+			gfxSwapBuffers();
+		}
+		else if(status == APP_SUSPENDING)
+		{
+			aptReturnToMenu();
+		}
+		else if(status == APP_SLEEPMODE)
+		{
+			aptWaitStatusEvent();
+		}
+
 		svcSleepThread(8333333);
 	}
 
+	svcCloseHandle(ptmHandle);
+	svcCloseHandle(acHandle);
+
 	// cleanup whatever we have to cleanup
-	// TODO : call whatever needs to be called to free main heap
 	hidExit();
 	gfxExit();
 	exitFilesystem();
-	_aptExit();
+	aptExit();
 	srvExit();
 
 	//open file that we're going to boot up
