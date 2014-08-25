@@ -106,7 +106,7 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 	{
 		u16 entryBuffer[512];
 		memset(entryBuffer,0,1024);
-		FSDIR_Read(dirHandle, &entriesRead, 1, (u16*)entryBuffer);
+		FSDIR_Read(dirHandle, &entriesRead, 1, (FS_dirent*)entryBuffer);
 		if(entriesRead && entryBuffer[0x10E]) //only grab directories
 		{
 			static char fullPath[1024];

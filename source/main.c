@@ -10,8 +10,7 @@
 #include <3ds/FS.h>
 #include <3ds/svc.h>
 #include <3ds/AC.h>
-
-#include "PTM.h"
+#include <3ds/PTM.h>
 
 #include "gfx.h"
 #include "menu.h"
@@ -207,9 +206,6 @@ bool secretCode(void)
 	return false;
 }
 
-//TEMP until we move this to ctrulib...
-Handle acHandle, ptmHandle;
-
 int main()
 {
 	srvInit();
@@ -217,6 +213,8 @@ int main()
 	initFilesystem();
 	gfxInit();
 	hidInit(NULL);
+	acInit();
+	ptmInit();
 
 	aptSetupEventHandler();
 
@@ -228,9 +226,6 @@ int main()
 		bubbles[i].wobble = ((rand() % 20) - 10) << 8;
 		bubbles[i].fade = 15;
 	}
-
-	srvGetServiceHandle(&acHandle, "ac:u");
-	srvGetServiceHandle(&ptmHandle, "ptm:u");
 
 	initBackground();
 	
@@ -244,9 +239,9 @@ int main()
 	{
 		if(status == APP_RUNNING)
 		{
-			ACU_GetWifiStatus(acHandle, &wifiStatus);
-			PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
-			PTMU_GetBatteryChargeState(ptmHandle, &charging);
+			ACU_GetWifiStatus(NULL, &wifiStatus);
+			PTMU_GetBatteryLevel(NULL, &batteryLevel);
+			PTMU_GetBatteryChargeState(NULL, &charging);
 			hidScanInput();
 			if(secretCode())
 				brewMode = true;
@@ -271,10 +266,8 @@ int main()
 		svcSleepThread(8333333);
 	}
 
-	svcCloseHandle(ptmHandle);
-	svcCloseHandle(acHandle);
-
 	// cleanup whatever we have to cleanup
+	acExit();
 	hidExit();
 	gfxExit();
 	exitFilesystem();
