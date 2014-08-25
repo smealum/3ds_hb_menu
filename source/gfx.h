@@ -2,6 +2,7 @@
 #define GFX_H
 
 #include <3ds/types.h>
+#include <3ds/gfx.h>
 
 typedef enum
 {
