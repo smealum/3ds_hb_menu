@@ -4,7 +4,6 @@
 #include <3ds/HID.h>
 
 #include "menu.h"
-#include "gfx.h"
 
 #define SCROLLING_SPEED (16) //lower is faster
 
@@ -32,7 +31,7 @@ void drawMenu(menu_s* m)
 	int i=0;
 	while(me)
 	{
-		drawMenuEntry(me, false, getEntryLocation(m,i), 16, i==m->selectedEntry);
+		drawMenuEntry(me, GFX_BOTTOM, getEntryLocation(m,i), 16, i==m->selectedEntry);
 		me=me->next;
 		i++;
 	}	
@@ -136,13 +135,13 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 }
 
-void drawMenuEntry(menuEntry_s* me, bool top, u16 x, u16 y, bool selected)
+void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
 {
 	if(!me)return;
 
 	//TODO : proper template sort of thing ?
-	gfxDrawRectangle(top, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
-	gfxDrawSprite(top, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
-	gfxDrawText(top, me->name, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
-	gfxDrawText(top, me->executablePath, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
+	gfxDrawRectangle(screen, GFX_LEFT, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
+	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
+	gfxDrawText(screen, GFX_LEFT, me->name, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
+	gfxDrawText(screen, GFX_LEFT, me->executablePath, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
 }

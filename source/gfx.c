@@ -13,11 +13,43 @@
 u8* gspHeap;
 u32* gxCmdBuf;
 
+GSP_FramebufferInfo topFramebufferInfo, bottomFramebufferInfo;
+
 u8 currentBuffer;
 u8* topLeftFramebuffers[2];
-u8* subFramebuffers[2];
+u8* topRightFramebuffers[2];
+u8* bottomFramebuffers[2];
+bool enable3d;
 
 Handle gspEvent, gspSharedMemHandle;
+
+void gfxSet3D(bool enable)
+{
+	enable3d=enable;
+}
+
+void gfxSetFramebufferInfo(gfxScreen_t screen, u8 id)
+{
+	if(screen==GFX_TOP)
+	{
+		topFramebufferInfo.active_framebuf=id;
+		topFramebufferInfo.framebuf0_vaddr=(u32*)topLeftFramebuffers[id];
+		if(enable3d)topFramebufferInfo.framebuf1_vaddr=(u32*)topRightFramebuffers[id];
+		else topFramebufferInfo.framebuf1_vaddr=topFramebufferInfo.framebuf0_vaddr;
+		topFramebufferInfo.framebuf_widthbytesize=240*3;
+		topFramebufferInfo.format=((1)<<8)|((1)<<6)|((enable3d&1)<<5)|GSP_BGR8_OES;
+		topFramebufferInfo.framebuf_dispselect=id;
+		topFramebufferInfo.unk=0x00000000;
+	}else{
+		bottomFramebufferInfo.active_framebuf=id;
+		bottomFramebufferInfo.framebuf0_vaddr=(u32*)bottomFramebuffers[id];
+		bottomFramebufferInfo.framebuf1_vaddr=0x00000000;
+		bottomFramebufferInfo.framebuf_widthbytesize=240*3;
+		bottomFramebufferInfo.format=GSP_BGR8_OES;
+		bottomFramebufferInfo.framebuf_dispselect=id;
+		bottomFramebufferInfo.unk=0x00000000;
+	}
+}
 
 void gfxInit()
 {
@@ -35,19 +67,24 @@ void gfxInit()
 	//map GSP heap
 	svcControlMemory((u32*)&gspHeap, 0x0, 0x0, 0x02000000, 0x10003, 0x3);
 
-	//setup framebuffers on the GSP heap
-	topLeftFramebuffers[0]=(u8*)gspHeap+0xC000000;
-	topLeftFramebuffers[1]=topLeftFramebuffers[0]+0x46500;
-	subFramebuffers[0]=topLeftFramebuffers[1]+0x46500;
-	subFramebuffers[1]=subFramebuffers[0]+0x38400;
+	//gspHeap configuration :
+	//		topleft1  0x00000000-0x00046500
+	//		topleft2  0x00046500-0x0008CA00
+	//		bottom1   0x0008CA00-0x000C4E00
+	//		bottom2   0x000C4E00-0x000FD200
+	//	if 3d enabled :
+	//		topright1 0x000FD200-0x00143700
+	//		topright2 0x00143700-0x00189C00
 
-	GSPGPU_WriteHWRegs(NULL, 0x400468, (u32*)&topLeftFramebuffers, 8);
-	GSPGPU_WriteHWRegs(NULL, 0x400568, (u32*)&subFramebuffers, 8);
-	
-	topLeftFramebuffers[0]-=0xC000000;
-	topLeftFramebuffers[1]-=0xC000000;
-	subFramebuffers[0]-=0xC000000;
-	subFramebuffers[1]-=0xC000000;
+	topLeftFramebuffers[0]=(u8*)gspHeap;
+	topLeftFramebuffers[1]=topLeftFramebuffers[0]+0x46500;
+	bottomFramebuffers[0]=topLeftFramebuffers[1]+0x46500;
+	bottomFramebuffers[1]=bottomFramebuffers[0]+0x38400;
+	enable3d=false;
+
+	//initialize framebuffer info structures
+	gfxSetFramebufferInfo(GFX_TOP, 0);
+	gfxSetFramebufferInfo(GFX_BOTTOM, 0);
 
 	//wait until we can write stuff to it
 	svcWaitSynchronization(gspEvent, 0x55bcb0);
@@ -76,53 +113,52 @@ void gfxExit()
 	gspExit();
 }
 
-u8* gfxGetFramebuffer(bool top, u16* width, u16* height)
+u8* gfxGetFramebuffer(gfxScreen_t screen, gfx3dSide_t side, u16* width, u16* height)
 {
 	if(width)*width=240;
 
-	if(top)
+	if(screen==GFX_TOP)
 	{
 		if(height)*height=400;
-		return topLeftFramebuffers[currentBuffer^1];
+		return (side==GFX_LEFT || !enable3d)?(topLeftFramebuffers[currentBuffer^1]):(topRightFramebuffers[currentBuffer^1]);
 	}else{
 		if(height)*height=320;
-		return subFramebuffers[currentBuffer^1];
+		return bottomFramebuffers[currentBuffer^1];
 	}
 }
 
 void gfxFlushBuffers()
 {
-	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(true, NULL, NULL), 0x46500);
-	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(false, NULL, NULL), 0x38400);
+	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(GFX_TOP, GFX_LEFT, NULL, NULL), 0x46500);
+	if(enable3d)GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(GFX_TOP, GFX_RIGHT, NULL, NULL), 0x46500);
+	GSPGPU_FlushDataCache(NULL, gfxGetFramebuffer(GFX_BOTTOM, GFX_LEFT, NULL, NULL), 0x38400);
 }
 
 void gfxSwapBuffers()
 {
-	u32 regData;
-
-	GSPGPU_ReadHWRegs(NULL, 0x400478, (u32*)&regData, 4);
-	regData^=1;
-	currentBuffer=regData&1;
-	GSPGPU_WriteHWRegs(NULL, 0x400478, (u32*)&regData, 4);
-	GSPGPU_WriteHWRegs(NULL, 0x400578, (u32*)&regData, 4);
+	currentBuffer^=1;
+	gfxSetFramebufferInfo(GFX_TOP, currentBuffer);
+	gfxSetFramebufferInfo(GFX_BOTTOM, currentBuffer);
+	GSPGPU_SetBufferSwap(NULL, GFX_TOP, &topFramebufferInfo);
+	GSPGPU_SetBufferSwap(NULL, GFX_BOTTOM, &bottomFramebufferInfo);
 }
 
-void gfxDrawText(bool top, char* str, u16 x, u16 y)
+void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y)
 {
 	if(!str)return;
 
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
 }
 
-void gfxDrawSprite(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
+void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	if(x+width<0 || x>=fbWidth)return;
 	if(y+height<0 || y>=fbHeight)return;
@@ -148,16 +184,16 @@ void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
-	gfxDrawSprite(true, spriteData, width, height, x-240, y);
-	gfxDrawSprite(true, spriteData, width, height, x, y-40);
+	gfxDrawSprite(GFX_TOP, GFX_LEFT, spriteData, width, height, x-240, y);
+	gfxDrawSprite(GFX_BOTTOM, GFX_LEFT, spriteData, width, height, x, y-40);
 }
 
-void gfxDrawSpriteAlpha(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
+void gfxDrawSpriteAlpha(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	if(x+width<0 || x>=fbWidth)return;
 	if(y+height<0 || y>=fbHeight)return;
@@ -195,12 +231,12 @@ void gfxDrawSpriteAlpha(bool top, u8* spriteData, u16 width, u16 height, s16 x, 
 		spriteData+=width*4;
 	}
 }
-void gfxDrawSpriteAlphaBlend(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
+void gfxDrawSpriteAlphaBlend(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
 	if(!spriteData)return;
 
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	if(x+width<0 || x>=fbWidth)return;
 	if(y+height<0 || y>=fbHeight)return;
@@ -239,12 +275,12 @@ void gfxDrawSpriteAlphaBlend(bool top, u8* spriteData, u16 width, u16 height, s1
 		spriteData+=width*4;
 	}
 }
-void gfxDrawSpriteAlphaBlendFade(bool top, u8* spriteData, u16 width, u16 height, s16 x, s16 y, u8 fadeValue)
+void gfxDrawSpriteAlphaBlendFade(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y, u8 fadeValue)
 {
 	if(!spriteData)return;
 
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	if(x+width<0 || x>=fbWidth)return;
 	if(y+height<0 || y>=fbHeight)return;
@@ -284,10 +320,10 @@ void gfxDrawSpriteAlphaBlendFade(bool top, u8* spriteData, u16 width, u16 height
 	}
 }
 
-void gfxFillColor(bool top, u8 rgbColor[3])
+void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3])
 {
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	//TODO : optimize; use GX command ?
 	int i;
@@ -299,10 +335,10 @@ void gfxFillColor(bool top, u8 rgbColor[3])
 	}
 }
 
-void gfxDrawRectangle(bool top, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height)
+void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height)
 {
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	if(x+width<0 || x>=fbWidth)return;
 	if(y+height<0 || y>=fbHeight)return;
@@ -337,10 +373,10 @@ static inline u16 getWaveLevel(u16 j, u16 level, u16 amplitude, u16 t)
 			level;
 }
 
-void gfxDrawWave(bool top, u8 rgbColor[3], u16 level, u16 amplitude, u16 t, u16 width)
+void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 t, u16 width)
 {
 	u16 fbWidth, fbHeight;
-	u8* fbAdr=gfxGetFramebuffer(top, &fbWidth, &fbHeight);
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
 	u8 colorLine[fbWidth*3];
 

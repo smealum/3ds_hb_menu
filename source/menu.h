@@ -3,6 +3,8 @@
 
 #include <3ds/types.h>
 
+#include "gfx.h"
+
 #define ENTRY_PATHLENGTH (128)
 #define ENTRY_NAMELENGTH (64)
 #define ENTRY_DESCLENGTH (128)
@@ -47,6 +49,6 @@ menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 //menu entry stuff
 void initEmptyMenuEntry(menuEntry_s* me);
 void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData);
-void drawMenuEntry(menuEntry_s* me, bool top, u16 x, u16 y, bool selected);
+void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);
 
 #endif

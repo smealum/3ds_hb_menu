@@ -11,26 +11,27 @@ void drawBackground(void)
 	static u32 cnt;
 
 	//top screen stuff
-	gfxFillColor(true, BGCOLOR);
-	gfxDrawWave(true, WATERBORDERCOLOR, 135, 20, cnt, 5);
-	gfxDrawWave(true, WATERCOLOR, 130, 20, cnt, 0);
+	gfxFillColor(GFX_TOP, GFX_LEFT, BGCOLOR);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, WATERBORDERCOLOR, 135, 20, cnt, 5);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, WATERCOLOR, 130, 20, cnt, 0);
 
 	//sub screen stuff
-	gfxFillColor(false, WATERCOLOR);
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, WATERCOLOR);
 
 	cnt += 2;
 }
+
 void drawBackgroundBrew(void)
 {
 	static u32 cnt;
 
 	//top screen stuff
-	gfxFillColor(true, BGCOLOR);
-	gfxDrawWave(true, BEERBORDERCOLOR, 135, 20, cnt, 5);
-	gfxDrawWave(true, BEERCOLOR, 130, 20, cnt, 0);
+	gfxFillColor(GFX_TOP, GFX_LEFT, BGCOLOR);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, BEERBORDERCOLOR, 135, 20, cnt, 5);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, BEERCOLOR, 130, 20, cnt, 0);
 
 	//sub screen stuff
-	gfxFillColor(false, BEERCOLOR);
+	gfxFillColor(GFX_BOTTOM, GFX_LEFT, BEERCOLOR);
 
 	cnt += 2;
 }
