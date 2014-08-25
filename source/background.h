@@ -1,16 +1,17 @@
 #ifndef BACKGROUND_H
 #define BACKGROUND_H
 
-#define WATERBORDERCOLOR (u8[]){118, 181, 205}
-#define WATERCOLOR (u8[]){75, 157, 188}
+#include <3ds/types.h>
 
-#define BEERBORDERCOLOR (u8[]){205, 181, 118}
+#define WATERBORDERCOLOR (u8[]){66, 224, 255}
+#define WATERCOLOR (u8[]){66, 163, 255}
+
+#define BEERBORDERCOLOR (u8[]){66, 224, 255}
 #define BEERCOLOR (u8[]){188, 157, 75}
 
-#define BGCOLOR (u8[]){205, 223, 228}
+#define BGCOLOR (u8[]){0, 132, 255}
 
 void initBackground(void);
-void drawBackground(void);
-void drawBackgroundBrew(void);
+void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3]);
 
 #endif

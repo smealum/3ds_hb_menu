@@ -2,6 +2,7 @@
 .SUFFIXES:
 #---------------------------------------------------------------------------------
 
+include $(DEVKITARM)/3ds_rules
 ifeq ($(strip $(DEVKITARM)),)
 $(error "Please set DEVKITARM in your environment. export DEVKITARM=<path to>devkitARM")
 endif
@@ -12,7 +13,6 @@ $(error "Please set CTRULIB in your environment. export CTRULIB=<path to>libctru
 endif
 
 TOPDIR ?= $(CURDIR)
-include $(DEVKITARM)/3ds_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
