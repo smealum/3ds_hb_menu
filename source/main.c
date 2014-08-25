@@ -143,7 +143,7 @@ void drawLogo()
 	debugValues[0] = charging;
 	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, str, 8, 100);
-	gfxDrawSpriteAlpha(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 113, 271, 64, 80);
+	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 113, 271, 64, 80);
 }
 
 void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
