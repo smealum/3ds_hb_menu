@@ -54,92 +54,86 @@ bubble_t bubbles[BUBBLE_COUNT];
 
 void drawBubbles()
 {
-	// int i = 0;
-	// //BUBBLES!!
-	// for(i = 0;i < BUBBLE_COUNT;i += 1)
-	// {
-	// 	bubbles[i].y += 2;
-	// 	if(bubbles[i].fade < 10)
-	// 	{
-	// 		bubbles[i].x = rand() % 400;
-	// 		bubbles[i].y = rand() % 10;
-	// 		bubbles[i].wobble = ((rand() % 20) - 10) << 8;
-	// 		bubbles[i].fade = 15;
-	// 	}
-	// 	else if(bubbles[i].y / 240 && bubbles[i].y % 240 > 100)
-	// 	{
-	// 		bubbles[i].fade -= 10;
-	// 	}
-	// 	else if(bubbles[i].fade < 255)
-	// 	{
-	// 		bubbles[i].fade += 10;
-	// 	}
+	int i = 0;
+	//BUBBLES!!
+	for(i = 0;i < BUBBLE_COUNT;i += 1)
+	{
+		bubbles[i].y += 2;
+		if(bubbles[i].fade < 10)
+		{
+			bubbles[i].x = rand() % 400;
+			bubbles[i].y = rand() % 10;
+			bubbles[i].wobble = ((rand() % 20) - 10) << 8;
+			bubbles[i].fade = 15;
+		}
+		else if(bubbles[i].y >= 240 && bubbles[i].y % 240 > 100)
+		{
+			bubbles[i].fade -= 10;
+		}
+		else if(bubbles[i].fade < 255)
+		{
+			bubbles[i].fade += 10;
+		}
 
-	// 	if(bubbles[i].wobbleLeft)
-	// 	{
-	// 		if(bubbles[i].wobble >> 8 <= -5)
-	// 		{
-	// 			bubbles[i].wobbleLeft = false;
-	// 		}
-	// 		else
-	// 		{
-	// 			bubbles[i].wobble -= 8;
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 		if(bubbles[i].wobble >> 8 >= 5)
-	// 		{
-	// 			bubbles[i].wobbleLeft = true;
-	// 		}
-	// 		else
-	// 		{
-	// 			bubbles[i].wobble += 8;
-	// 		}
-	// 	}
-	// 	gfxDrawSpriteAlphaBlendFade(bubbles[i].y / 240, (u8*)bubble_bin, 32, 32, 
-	// 		((bubbles[i].y / 240) ? -64 : 0) + bubbles[i].y % 240, 
-	// 		((bubbles[i].y / 240) ? 0 : -40) + bubbles[i].x + (bubbles[i].wobble >> 8), bubbles[i].fade);
-	// }
+		if(bubbles[i].wobbleLeft)
+		{
+			if(bubbles[i].wobble >> 8 <= -5)
+			{
+				bubbles[i].wobbleLeft = false;
+			}
+			else
+			{
+				bubbles[i].wobble -= 8;
+			}
+		}
+		else
+		{
+			if(bubbles[i].wobble >> 8 >= 5)
+			{
+				bubbles[i].wobbleLeft = true;
+			}
+			else
+			{
+				bubbles[i].wobble += 8;
+			}
+		}
+		gfxDrawSpriteAlphaBlendFade((bubbles[i].y >= 240) ? (GFX_TOP) : (GFX_BOTTOM), GFX_LEFT, (u8*)bubble_bin, 32, 32, 
+			((bubbles[i].y >= 240) ? -64 : 0) + bubbles[i].y % 240, 
+			((bubbles[i].y >= 240) ? 0 : -40) + bubbles[i].x + (bubbles[i].wobble >> 8), bubbles[i].fade);
+	}
 }
+
+u8* batteryLevels[] = {
+	(u8*)battery_lowest_bin,
+	(u8*)battery_lowest_bin,
+	(u8*)battery_low_bin,
+	(u8*)battery_mid_low_bin,
+	(u8*)battery_mid_high_bin,
+	(u8*)battery_full_bin,
+};
 
 void drawStatusBar()
 {
-	// // status bar
-	// gfxDrawSpriteAlphaBlend(true, (u8*)top_bar_bin, 16, 400, 240 - 16, 0);
-	// if(wifiStatus)
-	// {
-	// 	gfxDrawSpriteAlphaBlend(true, (u8*)wifi_full_bin, 16, 32, 240 - 16, 0);
-	// }
-	// else
-	// {
-	// 	gfxDrawSpriteAlphaBlend(true, (u8*)wifi_none_bin, 16, 32, 240 - 16, 0);
-	// }
-	// if(!charging)
-	// {
-	// 	switch(batteryLevel)
-	// 	{
-	// 	case 5:
-	// 		gfxDrawSpriteAlphaBlend(true, (u8*)battery_full_bin, 16, 32, 240 - 16, 400 - 32);
-	// 		break;
-	// 	case 4:
-	// 		gfxDrawSpriteAlphaBlend(true, (u8*)battery_mid_high_bin, 16, 32, 240 - 16, 400 - 32);
-	// 		break;
-	// 	case 3:
-	// 		gfxDrawSpriteAlphaBlend(true, (u8*)battery_mid_low_bin, 16, 32, 240 - 16, 400 - 32);
-	// 		break;
-	// 	case 2:
-	// 		gfxDrawSpriteAlphaBlend(true, (u8*)battery_low_bin, 16, 32, 240 - 16, 400 - 32);
-	// 		break;
-	// 	default:
-	// 		gfxDrawSpriteAlphaBlend(true, (u8*)battery_lowest_bin, 16, 32, 240 - 16, 400 - 32);
-	// 		break;
-	// 	}
-	// }
-	// else
-	// {
-	// 	gfxDrawSpriteAlphaBlend(true, (u8*)battery_charging_bin, 16, 32, 240 - 16, 400 - 32);
-	// }
+	// status bar
+	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)top_bar_bin, 16, 400, 240 - 16, 0);
+
+	if(wifiStatus)
+	{
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_full_bin, 16, 32, 240 - 16, 0);
+	}
+	else
+	{
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_none_bin, 16, 32, 240 - 16, 0);
+	}
+
+	if(!charging)
+	{
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, batteryLevels[batteryLevel], 16, 32, 240 - 16, 400 - 32);
+	}
+	else
+	{
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)battery_charging_bin, 16, 32, 240 - 16, 400 - 32);
+	}
 }
 
 void drawLogo()
@@ -149,26 +143,13 @@ void drawLogo()
 	debugValues[0] = charging;
 	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, str, 8, 100);
-	gfxDrawSpriteAlpha(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 182, 245, 28, 80);
+	gfxDrawSpriteAlpha(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 113, 271, 64, 80);
 }
 
-void renderFrame()
+void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 {
 	//background stuff
-	drawBackground();
-
-	//top screen stuff
-	drawBubbles();
-	drawStatusBar();
-	drawLogo();
-
-	//menu stuff
-	drawMenu(&menu);
-}
-void renderFrameBrew()
-{
-	//background stuff
-	drawBackgroundBrew();
+	drawBackground(bgColor, waterBorderColor, waterColor);
 
 	//top screen stuff
 	drawBubbles();
@@ -262,9 +243,9 @@ int main()
 		hidScanInput();
 		if(updateMenu(&menu))break;
 		if (brewMode)
-			renderFrameBrew();
+			renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
 		else
-			renderFrame();
+			renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
 		gfxFlushBuffers();
 		gfxSwapBuffers();
 		svcSleepThread(8333333);
