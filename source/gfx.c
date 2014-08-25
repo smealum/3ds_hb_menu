@@ -235,8 +235,7 @@ void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 
 
 static inline u16 getWaveLevel(u16 j, u16 level, u16 amplitude, u16 t)
 {
-	return ((pcCos(j*4+t*8)*amplitude/8)/4096)+
-			((pcCos(j+t)*amplitude)/4096)+
+	return ((pcCos(j+t)*amplitude)/4096)+
 			level;
 }
 
