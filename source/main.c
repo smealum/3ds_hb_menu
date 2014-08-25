@@ -212,6 +212,44 @@ static void launchFile(void)
 	callBootloader(0x00000000, hbHandle);
 }
 
+bool secretCode(void)
+{
+  static const u32 secret_code[] =
+  {
+    KEY_UP,
+    KEY_UP,
+    KEY_DOWN,
+    KEY_DOWN,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_LEFT,
+    KEY_RIGHT,
+    KEY_B,
+    KEY_A,
+  };
+
+  static u32 state   = 0;
+  static u32 timeout = 30;
+  u32 down = hidKeysDown();
+
+  if(down & secret_code[state])
+  {
+    ++state;
+    timeout = 30;
+
+    if(state == sizeof(secret_code)/sizeof(secret_code[0]))
+    {
+      state = 0;
+      return true;
+    }
+  }
+
+  if(timeout > 0 && --timeout == 0)
+    state = 0;
+
+  return false;
+}
+
 int main()
 {
 	srvInit();
@@ -227,13 +265,6 @@ int main()
 
 	srand(svcGetSystemTick());
 
-	hidScanInput();
-	if((hidKeysDown() & KEY_L) || (hidKeysDown() & KEY_R))
-	{
-		brewMode = true;
-	}
-
-
 	APP_STATUS status;
 	while((status=aptGetStatus())!=APP_EXITING)
 	{
@@ -241,9 +272,12 @@ int main()
 		PTMU_GetBatteryLevel(ptmHandle, &batteryLevel);
 		PTMU_GetBatteryChargeState(ptmHandle, &charging);
 		hidScanInput();
-		if(updateMenu(&menu))break;
+		if(secretCode())
+			brewMode = true;
+		else if(updateMenu(&menu))
+			break;
 		if (brewMode)
-			renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+			renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 		else
 			renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
 		gfxFlushBuffers();
