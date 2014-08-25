@@ -104,15 +104,15 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 	u32 entriesRead=0;
 	do
 	{
-		u16 entryBuffer[512];
-		memset(entryBuffer,0,1024);
-		FSDIR_Read(dirHandle, &entriesRead, 1, (FS_dirent*)entryBuffer);
-		if(entriesRead && entryBuffer[0x10E]) //only grab directories
+		static FS_dirent entry;
+		memset(&entry,0,sizeof(FS_dirent));
+		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
+		if(entriesRead && entry.isDirectory) //only grab directories
 		{
 			static char fullPath[1024];
 			strncpy(fullPath, path, 1024);
 			int n=strlen(fullPath);
-			unicodeToChar(&fullPath[n], entryBuffer, 1024-n);
+			unicodeToChar(&fullPath[n], entry.name, 1024-n);
 			addDirectoryToMenu(m, fullPath);
 		}
 	}while(entriesRead);
