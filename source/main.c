@@ -267,6 +267,7 @@ int main()
 	}
 
 	// cleanup whatever we have to cleanup
+	ptmExit();
 	acExit();
 	hidExit();
 	gfxExit();
