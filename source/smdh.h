@@ -1,7 +1,5 @@
-#ifndef SMDH_H
-#define SMDH_H
-
-#include <3ds/types.h>
+#pragma once
+#include <3ds.h>
 
 typedef struct
 {
@@ -40,5 +38,3 @@ typedef struct
 }smdh_s;
 
 int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData);
-
-#endif

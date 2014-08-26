@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <3ds/types.h>
+#include <3ds.h>
 #include "text.h"
 #include "font_bin.h"
 

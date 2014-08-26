@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-#include <3ds/types.h>
-#include <3ds/HID.h>
+#include <3ds.h>
 
 #include "menu.h"
 

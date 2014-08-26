@@ -1,8 +1,4 @@
-#ifndef MENU_H
-#define MENU_H
-
-#include <3ds/types.h>
-
+#pragma once
 #include "gfx.h"
 
 #define ENTRY_PATHLENGTH (128)
@@ -50,5 +46,3 @@ menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 void initEmptyMenuEntry(menuEntry_s* me);
 void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData);
 void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);
-
-#endif

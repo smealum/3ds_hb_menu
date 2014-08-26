@@ -1,7 +1,5 @@
-#ifndef BACKGROUND_H
-#define BACKGROUND_H
-
-#include <3ds/types.h>
+#pragma once
+#include <3ds.h>
 
 #define WATERBORDERCOLOR (u8[]){66, 224, 255}
 #define WATERCOLOR (u8[]){66, 163, 255}
@@ -13,5 +11,3 @@
 
 void initBackground(void);
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3]);
-
-#endif
