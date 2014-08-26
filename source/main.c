@@ -114,25 +114,28 @@ u8* batteryLevels[] = {
 void drawStatusBar()
 {
 	// status bar
-	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)top_bar_bin, 16, 400, 240 - 16, 0);
+	//gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)top_bar_bin, 16, 400, 240 - 16, 0);
 
 	if(wifiStatus)
 	{
-		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_full_bin, 16, 32, 240 - 16, 0);
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_full_bin, 18, 20, 240 - 18, 0);
 	}
 	else
 	{
-		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_none_bin, 16, 32, 240 - 16, 0);
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_none_bin, 18, 20, 240 - 18, 0);
 	}
 
+	/*
 	if(!charging)
 	{
-		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, batteryLevels[batteryLevel], 16, 32, 240 - 16, 400 - 32);
+		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, batteryLevels[batteryLevel], 18, 27, 240 - 18, 400 - 27);
 	}
 	else
 	{
 		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)battery_charging_bin, 16, 32, 240 - 16, 400 - 32);
 	}
+	*/
+	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, batteryLevels[batteryLevel], 18, 27, 240 - 18, 400 - 27);
 }
 
 void drawLogo()
