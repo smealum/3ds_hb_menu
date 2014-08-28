@@ -9,5 +9,13 @@
 
 #define BGCOLOR (u8[]){0, 132, 255}
 
+#define BUBBLE_COUNT 15
+
+typedef struct
+{
+	s32 x, y;
+	u8 fade;
+}bubble_t;
+
 void initBackground(void);
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3]);
