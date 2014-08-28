@@ -18,4 +18,5 @@ typedef struct
 }bubble_t;
 
 void initBackground(void);
+void updateBackground(void);
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3]);

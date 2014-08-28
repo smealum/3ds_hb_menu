@@ -230,13 +230,7 @@ void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 
 	}
 }
 
-static inline u16 getWaveLevel(u16 j, u16 level, u16 amplitude, u16 t)
-{
-	return ((pcCos(j+t)*amplitude)/4096)+
-			level;
-}
-
-void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 t, u16 width)
+void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 width, gfxWaveCallback cb, void* p)
 {
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
@@ -255,14 +249,14 @@ void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level
 	{
 		for(j=0; j<fbHeight; j++)
 		{
-			u16 waveLevel=getWaveLevel(j, level, amplitude, t);
+			u16 waveLevel=level+cb(p, j)*amplitude;
 			memcpy(&fbAdr[(waveLevel-width)*3], colorLine, width*3);
 			fbAdr+=fbWidth*3;
 		}
 	}else{
 		for(j=0; j<fbHeight; j++)
 		{
-			u16 waveLevel=getWaveLevel(j, level, amplitude, t);
+			u16 waveLevel=level+cb(p, j)*amplitude;
 			memcpy(fbAdr, colorLine, waveLevel*3);
 			fbAdr+=fbWidth*3;
 		}

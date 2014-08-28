@@ -1,6 +1,8 @@
 #pragma once
 #include <3ds.h>
 
+typedef float (*gfxWaveCallback)(void* p, u16 x);
+
 //rendering stuff
 void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y);
 void gfxDrawDualSprite(u8* spriteData, u16 width, u16 height, s16 x, s16 y);
@@ -10,4 +12,4 @@ void gfxDrawSpriteAlphaBlendFade(gfxScreen_t screen, gfx3dSide_t side, u8* sprit
 void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y);
 void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3]);
 void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height);
-void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 t, u16 width);
+void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 width, gfxWaveCallback cb, void* p);

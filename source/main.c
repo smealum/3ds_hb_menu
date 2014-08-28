@@ -117,14 +117,15 @@ int main()
 			PTMU_GetBatteryLevel(NULL, &batteryLevel);
 			PTMU_GetBatteryChargeState(NULL, &charging);
 			hidScanInput();
-			if(secretCode())
-				brewMode = true;
-			else if(updateMenu(&menu))
-				break;
-			if (brewMode)
-				renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
-			else
-				renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+
+			updateBackground();
+
+			if(secretCode())brewMode = true;
+			else if(updateMenu(&menu))break;
+
+			if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
+			else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+
 			gfxFlushBuffers();
 			gfxSwapBuffers();
 		}

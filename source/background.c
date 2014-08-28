@@ -1,10 +1,17 @@
 #include "background.h"
+#include "water.h"
 #include "gfx.h"
 
 #include "logo_bin.h"
 #include "bubble_bin.h"
 
-bubble_t bubbles[BUBBLE_COUNT];
+#define BG_WATER_CONTROLPOINTS (80)
+#define BG_WATER_NEIGHBORHOODS (3)
+#define BG_WATER_DAMPFACTOR (0.8f)
+#define BG_WATER_WIDTH (400)
+
+static bubble_t bubbles[BUBBLE_COUNT];
+static waterEffect_s waterEffect;
 
 void initBackground(void)
 {
@@ -15,6 +22,8 @@ void initBackground(void)
 		bubbles[i].y = rand() % 240;
 		bubbles[i].fade = 15;
 	}
+
+	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_WIDTH);
 }
 
 void updateBubble(bubble_t* bubble)
@@ -43,17 +52,27 @@ void updateBubble(bubble_t* bubble)
 
 void drawBubbles(void)
 {
-	int i = 0;
+	int i;
 	//BUBBLES!!
 	for(i = 0;i < BUBBLE_COUNT;i += 1)
 	{
-		// Update first
-		updateBubble(&bubbles[i]);
 		// Then draw (no point in separating more because then we go through them all twice).
 		gfxDrawSpriteAlphaBlendFade((bubbles[i].y >= 240) ? (GFX_TOP) : (GFX_BOTTOM), GFX_LEFT, (u8*)bubble_bin, 32, 32, 
 			((bubbles[i].y >= 240) ? -64 : 0) + bubbles[i].y % 240, 
 			((bubbles[i].y >= 240) ? 0 : -40) + bubbles[i].x, bubbles[i].fade);
 	}
+}
+
+void updateBackground(void)
+{
+	int i;
+	for(i = 0;i < BUBBLE_COUNT;i += 1)
+	{
+		// Update first
+		updateBubble(&bubbles[i]);
+	}
+
+	updateWaterEffect(&waterEffect);
 }
 
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
@@ -62,8 +81,8 @@ void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 
 	//top screen stuff
 	gfxFillColor(GFX_TOP, GFX_LEFT, bgColor);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, 135, 20, cnt, 5);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, 130, 20, cnt, 0);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, 135, 20, cnt, (gfxWaveCallback)&evaluateWater, &waterEffect);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, 130, 20, cnt, (gfxWaveCallback)&evaluateWater, &waterEffect);
 
 	//sub screen stuff
 	gfxFillColor(GFX_BOTTOM, GFX_LEFT, waterColor);
