@@ -77,12 +77,10 @@ void updateBackground(void)
 
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 {
-	static u32 cnt;
-
 	//top screen stuff
 	gfxFillColor(GFX_TOP, GFX_LEFT, bgColor);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, 135, 20, cnt, (gfxWaveCallback)&evaluateWater, &waterEffect);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, 130, 20, cnt, (gfxWaveCallback)&evaluateWater, &waterEffect);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, 135, 20, 5, (gfxWaveCallback)&evaluateWater, &waterEffect);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, 130, 20, 0, (gfxWaveCallback)&evaluateWater, &waterEffect);
 
 	//sub screen stuff
 	gfxFillColor(GFX_BOTTOM, GFX_LEFT, waterColor);
@@ -92,7 +90,5 @@ void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 
 	// Finally draw the logo.
 	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 113, 271, 64, 80);
-
-	cnt += 2;
 }
 
