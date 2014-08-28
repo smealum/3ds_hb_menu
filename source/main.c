@@ -138,7 +138,7 @@ int main()
 			aptWaitStatusEvent();
 		}
 
-		svcSleepThread(8333333);
+		gspWaitForVBlank();
 	}
 
 	// cleanup whatever we have to cleanup
