@@ -198,6 +198,32 @@ void gfxFillColor(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3])
 		*(fbAdr++)=rgbColor[0];
 	}
 }
+void gfxFillColorGradient(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColorStart[3], u8 rgbColorEnd[3])
+{
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
+	u8 colorLine[fbWidth*3];
+
+	//TODO : optimize; use GX command ?
+	int i;
+	float n;
+	float total = (float)(fbWidth - 1);
+	// make slightly bigger to prevent gradients from blending around.  SHould be removed and have the gradient color be better later.
+	total *= 1.5f;
+	for(i=0; i<fbWidth; i++)
+	{
+		n = (float)i / total;
+		colorLine[i*3+0]=(float)rgbColorStart[2] * (1.0f-n) + (float)rgbColorEnd[2] * n;
+		colorLine[i*3+1]=(float)rgbColorStart[1] * (1.0f-n) + (float)rgbColorEnd[1] * n;
+		colorLine[i*3+2]=(float)rgbColorStart[0] * (1.0f-n) + (float)rgbColorEnd[0] * n;
+	}
+
+	for(i=0; i<fbHeight; i++)
+	{
+		memcpy(fbAdr, colorLine, fbWidth*3);
+		fbAdr+=fbWidth*3;
+	}
+}
 
 void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 x, s16 y, u16 width, u16 height)
 {
@@ -230,7 +256,7 @@ void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 
 	}
 }
 
-void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level, u16 amplitude, u16 width, gfxWaveCallback cb, void* p)
+void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColorStart[3], u8 rgbColorEnd[3], u16 level, u16 amplitude, u16 width, gfxWaveCallback cb, void* p)
 {
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
@@ -238,15 +264,15 @@ void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level
 	u8 colorLine[fbWidth*3];
 
 	int j;
-	for(j=0; j<fbWidth; j++)
-	{
-		colorLine[j*3+0]=rgbColor[2];
-		colorLine[j*3+1]=rgbColor[1];
-		colorLine[j*3+2]=rgbColor[0];
-	}
 
 	if(width)
 	{
+		for(j=0; j<fbWidth; j++)
+		{
+			colorLine[j*3+0]=rgbColorStart[2];
+			colorLine[j*3+1]=rgbColorStart[1];
+			colorLine[j*3+2]=rgbColorStart[0];
+		}
 		for(j=0; j<fbHeight; j++)
 		{
 			u16 waveLevel=level+cb(p, j)*amplitude;
@@ -254,6 +280,19 @@ void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], u16 level
 			fbAdr+=fbWidth*3;
 		}
 	}else{
+		int i;
+		float n;
+		float total = (float)(fbWidth - 1);
+		// make slightly bigger to prevent gradients from blending around.  SHould be removed and have the gradient color be better later.
+		total *= 1.5f;
+		for(i=0; i<fbWidth; i++)
+		{
+			n = (float)i / total;
+			colorLine[i*3+0]=(float)rgbColorStart[2] * (1.0f-n) + (float)rgbColorEnd[2] * n;
+			colorLine[i*3+1]=(float)rgbColorStart[1] * (1.0f-n) + (float)rgbColorEnd[1] * n;
+			colorLine[i*3+2]=(float)rgbColorStart[0] * (1.0f-n) + (float)rgbColorEnd[0] * n;
+		}
+
 		for(j=0; j<fbHeight; j++)
 		{
 			u16 waveLevel=level+cb(p, j)*amplitude;

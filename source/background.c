@@ -78,12 +78,13 @@ void updateBackground(void)
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 {
 	//top screen stuff
+	//gfxFillColorGradient(GFX_TOP, GFX_LEFT, waterBorderColor, waterColor);
 	gfxFillColor(GFX_TOP, GFX_LEFT, bgColor);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, 135, 20, 5, (gfxWaveCallback)&evaluateWater, &waterEffect);
-	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, 130, 20, 0, (gfxWaveCallback)&evaluateWater, &waterEffect);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterBorderColor, waterColor, 135, 20, 5, (gfxWaveCallback)&evaluateWater, &waterEffect);
+	gfxDrawWave(GFX_TOP, GFX_LEFT, waterColor, waterBorderColor, 130, 20, 0, (gfxWaveCallback)&evaluateWater, &waterEffect);
 
 	//sub screen stuff
-	gfxFillColor(GFX_BOTTOM, GFX_LEFT, waterColor);
+	gfxFillColorGradient(GFX_BOTTOM, GFX_LEFT, waterColor, waterBorderColor);
 
 	// Bubbles belong on both screens so they should be drawn second to last.
 	drawBubbles();
