@@ -20,6 +20,10 @@ u8* batteryLevels[] = {
 
 void drawStatusBar(bool wifiStatus, bool charging, int batteryLevel)
 {
+	char timeString[256];
+	sprintf(timeString, "%d:00", osGetTime());
+	gfxDrawText(GFX_TOP, GFX_LEFT, timeString, 50, 100);
+
 	if(wifiStatus)
 	{
 		gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)wifi_full_bin, 18, 20, 240 - 18, 0);

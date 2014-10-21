@@ -38,3 +38,15 @@ void drawString(u8* fb, char* str, u16 x, u16 y, u16 w, u16 h)
 		if(str[k]=='\n'){dx=0;dy-=8;}
 	}
 }
+
+void drawStringN(u8* fb, char* str, u16 length, u16 x, u16 y, u16 w, u16 h)
+{
+	if(!fb || !str)return;
+	int k; int dx=0, dy=0;
+	for(k=0;k<strlen(str) && k < length;k++)
+	{
+		if(str[k]>=32 && str[k]<128)drawCharacter(fb,str[k],x+dx,y+dy,w,h);
+		dx+=8;
+		if(str[k]=='\n'){dx=0;dy-=8;}
+	}
+}

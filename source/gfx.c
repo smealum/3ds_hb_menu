@@ -16,6 +16,15 @@ void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y)
 
 	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
 }
+void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, u16 x, u16 y)
+{
+	if(!str)return;
+
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
+
+	drawStringN(fbAdr, str, length, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
+}
 
 void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
 {
