@@ -141,6 +141,6 @@ void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selec
 	//TODO : proper template sort of thing ?
 	gfxDrawRectangle(screen, GFX_LEFT, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
-	gfxDrawText(screen, GFX_LEFT, me->name, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
-	gfxDrawText(screen, GFX_LEFT, me->executablePath, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
+	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
+	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
 }

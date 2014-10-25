@@ -20,7 +20,6 @@ int debugValues[100];
 
 void drawDebug()
 {
-	// logo
 	char str[256];
 	debugValues[0] = charging;
 	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);

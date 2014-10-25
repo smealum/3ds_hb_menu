@@ -20,7 +20,7 @@ int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData)
 	if(s->header.magic!=0x48444D53)return -2;
 
 	if(name)unicodeToChar(name, s->applicationTitles[1].shortDescription, 0x40);
-	if(desc)unicodeToChar(name, s->applicationTitles[1].longDescription, 0x80);
+	if(desc)unicodeToChar(desc, s->applicationTitles[1].longDescription, 0x80);
 	if(iconData)
 	{
 		u16* data=s->bigIconData;
