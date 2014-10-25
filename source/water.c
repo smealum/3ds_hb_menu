@@ -2,13 +2,14 @@
 #include <math.h>
 #include "water.h"
 
-void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d, u16 w)
+void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d,  float sf, u16 w)
 {
 	if(!we)return;
 
 	we->numControlPoints=n;
 	we->neighborhoodSize=s;
 	we->dampFactor=d;
+	we->springFactor=sf;
 	we->width=w;
 	we->controlPoints=calloc(n, sizeof(float));
 	we->controlPointSpeeds=calloc(n, sizeof(float));
@@ -19,7 +20,7 @@ void copyWaterEffect(waterEffect_s* dst, waterEffect_s* src)
 {
 	if(!dst || !src)return;
 
-	initWaterEffect(dst, src->numControlPoints, src->neighborhoodSize, src->dampFactor, src->width);
+	initWaterEffect(dst, src->numControlPoints, src->neighborhoodSize, src->dampFactor, src->springFactor, src->width);
 	memcpy(dst->controlPoints, src->controlPoints, sizeof(float)*src->numControlPoints);
 	memcpy(dst->controlPointSpeeds, src->controlPointSpeeds, sizeof(float)*src->numControlPoints);
 }
@@ -84,7 +85,8 @@ void updateWaterEffect(waterEffect_s* we)
 	for(k=0; k<we->numControlPoints; k++)
 	{
 		float rest=getNeighborAverage(&tmpwe, k);
-		we->controlPointSpeeds[k]+=(rest-we->controlPoints[k])*we->dampFactor;
+		we->controlPointSpeeds[k]*=we->dampFactor;
+		we->controlPointSpeeds[k]+=(rest-we->controlPoints[k])*we->springFactor;
 		we->controlPoints[k]+=we->controlPointSpeeds[k];
 	}
 

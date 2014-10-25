@@ -7,7 +7,8 @@
 
 #define BG_WATER_CONTROLPOINTS (80)
 #define BG_WATER_NEIGHBORHOODS (3)
-#define BG_WATER_DAMPFACTOR (0.8f)
+#define BG_WATER_DAMPFACTOR (0.7f)
+#define BG_WATER_SPRINGFACTOR (0.8f)
 #define BG_WATER_WIDTH (400)
 
 static bubble_t bubbles[BUBBLE_COUNT];
@@ -23,7 +24,7 @@ void initBackground(void)
 		bubbles[i].fade = 15;
 	}
 
-	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_WIDTH);
+	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_SPRINGFACTOR, BG_WATER_WIDTH);
 }
 
 void updateBubble(bubble_t* bubble)
@@ -71,6 +72,14 @@ void updateBackground(void)
 		// Update first
 		updateBubble(&bubbles[i]);
 	}
+
+	//TEMP TEST
+	if(hidKeysDown()&KEY_UP)exciteWater(&waterEffect, 1.0f, 0);
+	if(hidKeysDown()&KEY_DOWN)exciteWater(&waterEffect, 2.0f, 0);
+	if(hidKeysDown()&KEY_LEFT)exciteWater(&waterEffect, 5.0f, 0);
+	if(hidKeysDown()&KEY_RIGHT)exciteWater(&waterEffect, -10.0f, 0);
+	if(hidKeysDown()&KEY_R)exciteWater(&waterEffect, 20.0f, 0);
+	if(hidKeysDown()&KEY_L)exciteWater(&waterEffect, 50.0f, 0);
 
 	updateWaterEffect(&waterEffect);
 }

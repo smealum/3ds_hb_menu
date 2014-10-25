@@ -8,12 +8,13 @@ typedef struct
 	u16 numControlPoints;
 	u16 neighborhoodSize;
 	u16 width;
+	float springFactor;
 	float dampFactor;
 	float* controlPoints;
 	float* controlPointSpeeds;
 }waterEffect_s;
 
-void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d, u16 w);
+void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d, float sf, u16 w);
 void killWaterEffect(waterEffect_s* we);
 
 float evaluateWater(waterEffect_s* we, u16 x);
