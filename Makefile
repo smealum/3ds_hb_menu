@@ -46,7 +46,7 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=3dsx.specs -g $(ARCH) \
 			-Wl,-d,-q,--use-blx,-Map,$(TARGET).map
 
-LIBS	:= -lctru
+LIBS	:= -lctru -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

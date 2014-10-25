@@ -1,3 +1,5 @@
+#include <math.h>
+
 #include "background.h"
 #include "water.h"
 #include "gfx.h"
@@ -13,6 +15,7 @@
 
 static bubble_t bubbles[BUBBLE_COUNT];
 static waterEffect_s waterEffect;
+static int backgroundCnt;
 
 void initBackground(void)
 {
@@ -25,6 +28,7 @@ void initBackground(void)
 	}
 
 	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_SPRINGFACTOR, BG_WATER_WIDTH);
+	backgroundCnt = 0;
 }
 
 void updateBubble(bubble_t* bubble)
@@ -73,6 +77,8 @@ void updateBackground(void)
 		updateBubble(&bubbles[i]);
 	}
 
+	exciteWater(&waterEffect, sin(backgroundCnt*0.1f), 0);
+
 	//TEMP TEST
 	if(hidKeysDown()&KEY_UP)exciteWater(&waterEffect, 1.0f, 0);
 	if(hidKeysDown()&KEY_DOWN)exciteWater(&waterEffect, 2.0f, 0);
@@ -82,6 +88,8 @@ void updateBackground(void)
 	if(hidKeysDown()&KEY_L)exciteWater(&waterEffect, 50.0f, 0);
 
 	updateWaterEffect(&waterEffect);
+
+	backgroundCnt++;
 }
 
 void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
