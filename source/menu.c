@@ -4,6 +4,8 @@
 
 #include "menu.h"
 
+#include "app_bubble_bin.h"
+
 #define SCROLLING_SPEED (16) //lower is faster
 
 void initMenu(menu_s* m)
@@ -30,7 +32,7 @@ void drawMenu(menu_s* m)
 	int i=0;
 	while(me)
 	{
-		drawMenuEntry(me, GFX_BOTTOM, getEntryLocation(m,i), 16, i==m->selectedEntry);
+		drawMenuEntry(me, GFX_BOTTOM, getEntryLocation(m,i), 9, i==m->selectedEntry);
 		me=me->next;
 		i++;
 	}	
@@ -139,8 +141,9 @@ void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selec
 	if(!me)return;
 
 	//TODO : proper template sort of thing ?
-	gfxDrawRectangle(screen, GFX_LEFT, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
-	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+8, y+8);
-	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+8+ENTRY_ICON_WIDTH-4, y+8+ENTRY_ICON_HEIGHT+8);
-	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+8+ENTRY_ICON_WIDTH-4-16, y+8+ENTRY_ICON_HEIGHT+8);
+	// gfxDrawRectangle(screen, GFX_LEFT, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
+	gfxDrawSpriteAlphaBlend(screen, GFX_LEFT, (u8*)app_bubble_bin, 63, 294, x, y);
+	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
+	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+52, y+66);
+	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+35, y+66);
 }
