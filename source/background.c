@@ -77,7 +77,7 @@ void updateBackground(void)
 		updateBubble(&bubbles[i]);
 	}
 
-	exciteWater(&waterEffect, sin(backgroundCnt*0.1f), 0);
+	exciteWater(&waterEffect, sin(backgroundCnt*0.1f)*2.0f, 0);
 
 	//TEMP TEST
 	if(hidKeysDown()&KEY_UP)exciteWater(&waterEffect, 1.0f, 0);
