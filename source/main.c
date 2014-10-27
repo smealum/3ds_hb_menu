@@ -98,8 +98,6 @@ int main()
 	acInit();
 	ptmInit();
 
-	aptSetupEventHandler();
-
 	initBackground();
 	
 	initMenu(&menu);
