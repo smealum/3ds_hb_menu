@@ -4,9 +4,13 @@
 
 #include "menu.h"
 
-#include "app_bubble_bin.h"
+u8 roundLut[]={8, 5, 4, 3, 2, 1, 1, 1, 0};
+u8 roundLut2[]={4, 3, 2, 1, 0};
+u8 roundLut3[]={0, 1, 2};
 
 #define SCROLLING_SPEED (16) //lower is faster
+
+extern int debugValues[100]; //TEMP
 
 void initMenu(menu_s* m)
 {
@@ -24,6 +28,26 @@ static inline s16 getEntryLocation(menu_s* m, int n)
 	return 240-(n+1)*ENTRY_WIDTH+fptToInt(m->scrollLocation);
 }
 
+void drawScrollBar(menu_s* m)
+{
+	if(!m)return;
+
+	int scrollBarTotalSize=m->scrollBarSize+3*2;
+
+	int i;
+	// background scrollbar thing
+		//35,308 - 200,7
+		u8 colorBg[]={132, 224, 255};
+		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, colorBg, 38-i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
+		gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, colorBg, 38, 308, 194, 7);
+		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, colorBg, 232+i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
+	// actual scrollbar
+		u8 color[]={255, 255, 255};
+		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38-i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
+		gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38, 308, m->scrollBarSize, 7);
+		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38+m->scrollBarSize+i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
+}
+
 void drawMenu(menu_s* m)
 {
 	if(!m)return;
@@ -35,7 +59,9 @@ void drawMenu(menu_s* m)
 		drawMenuEntry(me, GFX_BOTTOM, getEntryLocation(m,i), 9, i==m->selectedEntry);
 		me=me->next;
 		i++;
-	}	
+	}
+
+	drawScrollBar(m);
 }
 
 void addMenuEntry(menu_s* m, menuEntry_s* me)
@@ -110,6 +136,13 @@ bool updateMenu(menu_s* m)
 	m->scrollLocation+=m->scrollVelocity;
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
 
+	int maxScroll=240-(m->numEntries)*ENTRY_WIDTH; //cf getEntryLocation
+	m->scrollBarSize=40; //TEMP : make it adaptive ?
+	m->scrollBarPos=-fptToInt(m->scrollLocation*(200-m->scrollBarSize))/maxScroll;
+
+	debugValues[0]=m->scrollLocation;
+	debugValues[1]=fptToInt(m->scrollLocation);
+
 	return false;
 }
 
@@ -139,10 +172,22 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
 {
 	if(!me)return;
+	int i;
 
 	//TODO : proper template sort of thing ?
-	// gfxDrawRectangle(screen, GFX_LEFT, selected?ENTRY_BGCOLOR_SELECTED:ENTRY_BGCOLOR, x+2, y, ENTRY_WIDTH-4, 288);
-	gfxDrawSpriteAlphaBlend(screen, GFX_LEFT, (u8*)app_bubble_bin, 63, 294, x, y);
+	//main frame
+	u8 colorMain[]={246, 252, 255};
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, colorMain, x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
+	gfxDrawRectangle(screen, GFX_LEFT, colorMain, x, y+9, 63, 276);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, colorMain, x+roundLut[i], y+294-1-i, 63-roundLut[i]*2, 1);
+
+	//icon frame
+	u8 colorIcon[]={225, 225, 225};
+	for(i=0; i<5; i++)gfxDrawRectangle(screen, GFX_LEFT, colorIcon, x+3+roundLut2[i], y+4+i, 56-roundLut2[i]*2, 1);
+	gfxDrawRectangle(screen, GFX_LEFT, colorIcon, x+3, y+9, 56, 46);
+	for(i=0; i<5; i++)gfxDrawRectangle(screen, GFX_LEFT, colorIcon, x+3+roundLut2[i], y+4+56-1-i, 56-roundLut2[i]*2, 1);
+
+	//app specific stuff
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
 	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+52, y+66);
 	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+35, y+66);

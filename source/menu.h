@@ -31,6 +31,8 @@ typedef struct
 	u16 selectedEntry;
 	s32 scrollLocation; //10 bit fixed point
 	s32 scrollVelocity; //10 bit fixed point
+	s32 scrollBarSize;
+	s32 scrollBarPos;
 }menu_s;
 
 //menu stuff

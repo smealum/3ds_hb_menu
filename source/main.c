@@ -25,7 +25,7 @@ Handle irRstEventHandle;
 void drawDebug()
 {
 	char str[256];
-	sprintf(str, "hello %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
+	sprintf(str, "hello2 %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, str, 8, 100);
 
 	// unsigned int* mem=(unsigned int*)0x10010000;
