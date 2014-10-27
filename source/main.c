@@ -18,23 +18,11 @@ u8 charging = 0;
 
 int debugValues[100];
 
-Handle irRstHandle;
-Handle irRstMemHandle;
-Handle irRstEventHandle;
-
 void drawDebug()
 {
 	char str[256];
 	sprintf(str, "hello2 %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, str, 8, 100);
-
-	// unsigned int* mem=(unsigned int*)0x10010000;
-	// int i;
-	// for(i=0;i<28;i++)
-	// {
-	// 	sprintf(str, "%08X %08X %08X %08X\n", mem[i*4+0], mem[i*4+1], mem[i*4+2], mem[i*4+3]);
-	// 	gfxDrawText(GFX_TOP, GFX_LEFT, str, 240-1-i*8, 0);
-	// }
 }
 
 void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
@@ -136,13 +124,6 @@ int main()
 
 			if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 			else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
-
-			circlePosition cstick;
-			hidCstickRead(&cstick);
-			debugValues[0] = cstick.dx;
-			debugValues[1] = cstick.dy;
-			debugValues[2] = hidKeysHeld();
-			debugValues[3] = hidKeysDown();
 
 			gfxFlushBuffers();
 			gfxSwapBuffers();

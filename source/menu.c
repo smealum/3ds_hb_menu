@@ -21,6 +21,10 @@ void initMenu(menu_s* m)
 	m->selectedEntry=0;
 	m->scrollLocation=0;
 	m->scrollVelocity=0;
+	m->scrollBarSize=0;
+	m->scrollBarPos=0;
+	m->scrollTarget=0;
+	m->atEquilibrium=false;
 }
 
 static inline s16 getEntryLocation(menu_s* m, int n)
@@ -113,35 +117,57 @@ bool updateMenu(menu_s* m)
 
 	//controls
 	s8 move=0;
+	circlePosition cstick;
+	hidCstickRead(&cstick);
 
 	if(hidKeysDown()&KEY_DOWN)move++;
 	if(hidKeysDown()&KEY_UP)move--;
 	if(hidKeysDown()&KEY_RIGHT)move+=4;
 	if(hidKeysDown()&KEY_LEFT)move-=4;
 
+	u16 oldEntry=m->selectedEntry;
 	if(move+m->selectedEntry<0)m->selectedEntry=0;
 	else if(move+m->selectedEntry>=m->numEntries)m->selectedEntry=m->numEntries-1;
 	else m->selectedEntry+=move;
 
+	if(m->selectedEntry!=oldEntry)m->atEquilibrium=false;
+
 	if(hidKeysDown()&KEY_A)return true;
 
 	//scrolling code
-	s32 target=intToFpt(getEntryLocation(m, m->selectedEntry));
+	const int maxScroll=240-(m->numEntries)*ENTRY_WIDTH; //cf getEntryLocation
 
-	if(target>intToFpt(240-ENTRY_WIDTH) || (m->selectedEntry==0 && m->numEntries>3))
-		m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-target)/SCROLLING_SPEED;
-	if(target<0 || (m->selectedEntry==m->numEntries-1 && m->numEntries>3))
-		m->scrollVelocity+=(intToFpt(0)-target)/SCROLLING_SPEED;
+	if(!m->atEquilibrium)
+	{
+		m->scrollTarget=intToFpt(getEntryLocation(m, m->selectedEntry));
+		if(m->scrollTarget>intToFpt(240-ENTRY_WIDTH) || (m->selectedEntry==0 && m->numEntries>3))
+			m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-m->scrollTarget)/SCROLLING_SPEED;
+		if(m->scrollTarget<0 || (m->selectedEntry==m->numEntries-1 && m->numEntries>3))
+			m->scrollVelocity+=(intToFpt(0)-m->scrollTarget)/SCROLLING_SPEED;
+	}else{
+		s32 val=-cstick.dy*16; // TODO : make it inversely proportional to numEntries ?
+		if(m->scrollLocation>intToFpt(-maxScroll))
+		{
+			m->scrollVelocity+=(intToFpt(-maxScroll)-m->scrollLocation)/SCROLLING_SPEED;
+			if(val<0)m->scrollVelocity+=val;
+		}else if(m->scrollLocation<intToFpt(0)){
+			m->scrollVelocity-=m->scrollLocation/SCROLLING_SPEED;
+			if(val>0)m->scrollVelocity+=val;
+		}else m->scrollVelocity+=val;
+	}
 
 	m->scrollLocation+=m->scrollVelocity;
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
 
-	int maxScroll=240-(m->numEntries)*ENTRY_WIDTH; //cf getEntryLocation
 	m->scrollBarSize=40; //TEMP : make it adaptive ?
 	m->scrollBarPos=-fptToInt(m->scrollLocation*(200-m->scrollBarSize))/maxScroll;
 
+	if(!m->scrollVelocity)m->atEquilibrium=true;
+
 	debugValues[0]=m->scrollLocation;
-	debugValues[1]=fptToInt(m->scrollLocation);
+	debugValues[1]=m->scrollTarget;
+	debugValues[2]=intToFpt(maxScroll);
+	debugValues[3]=maxScroll;
 
 	return false;
 }

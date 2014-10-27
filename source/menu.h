@@ -29,10 +29,12 @@ typedef struct
 	menuEntry_s* entries;
 	u16 numEntries;
 	u16 selectedEntry;
+	s32 scrollTarget; //10 bit fixed point
 	s32 scrollLocation; //10 bit fixed point
 	s32 scrollVelocity; //10 bit fixed point
 	s32 scrollBarSize;
 	s32 scrollBarPos;
+	bool atEquilibrium;
 }menu_s;
 
 //menu stuff
