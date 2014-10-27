@@ -7,7 +7,7 @@
 #include "text.h"
 #include "costable.h"
 
-void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y, u8 r, u8 g, u8 b)
+void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, s16 x, s16 y, u8 r, u8 g, u8 b)
 {
 	if(!str)return;
 
@@ -17,7 +17,7 @@ void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y, 
 	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth, r, g, b);
 }
 
-void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, u16 x, u16 y, u8 r, u8 g, u8 b)
+void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, s16 x, s16 y, u8 r, u8 g, u8 b)
 {
 	if(!str)return;
 

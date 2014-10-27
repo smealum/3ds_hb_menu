@@ -29,21 +29,25 @@ void drawCharacter(u8* fb, char c, u16 x, u16 y, u16 w, u16 h)
 	}
 }
 
-int drawCharacterNew(u8* fb, char c, u16 x, u16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
+//this code is not meant to be readable
+int drawCharacterNew(u8* fb, char c, s16 x, s16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
 {
 	charDesc_s* cd=&fontDesc[(int)c];
 	if(!cd->data)return 0;
 	x+=cd->xo;
-	if(x<0 || y<0 || x+cd->w>=w || y+cd->h>=h)return 0;
+	if(x<0 || x+cd->w>=w || y<-cd->h || y>=h+cd->h)return 0;
 	u8* charData=cd->data;
-	fb+=(x*h+y)*3;
 	int i, j;
+	s16 cy=y, ch=cd->h, cyo=0;
+	if(y<0){cy=0;cyo=-y;ch=cd->h-cyo;}
+	else if(y+ch>h)ch=h-y;
+	fb+=(x*h+cy)*3;
 	for(i=0;i<cd->w;i++)
 	{
-		for(j=0;j<cd->h;j++)
+		charData+=cyo;
+		for(j=0;j<ch;j++)
 		{
 			u8 v=*(charData++);
-			// if(v)fb[0]=fb[1]=fb[2]=0xff-v;
 			if(v)
 			{
 				fb[0]=(fb[0]*(0xFF-v)+(b*v))>>8;
@@ -52,17 +56,18 @@ int drawCharacterNew(u8* fb, char c, u16 x, u16 y, u16 w, u16 h, u8 r, u8 g, u8 
 			}
 			fb+=3;
 		}
-		fb+=(h-cd->h)*3;
+		charData+=(cd->h-(cyo+ch));
+		fb+=(h-ch)*3;
 	}
 	return cd->xa;
 }
 
-void drawString(u8* fb, char* str, u16 x, u16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
+void drawString(u8* fb, char* str, s16 x, s16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
 {
 	drawStringN(fb, str, strlen(str), x, y, w, h, r, g, b);
 }
 
-void drawStringN(u8* fb, char* str, u16 length, u16 x, u16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
+void drawStringN(u8* fb, char* str, u16 length, s16 x, s16 y, u16 w, u16 h, u8 r, u8 g, u8 b)
 {
 	if(!fb || !str)return;
 	int k; int dx=0, dy=0;
