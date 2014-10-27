@@ -202,10 +202,9 @@ void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selec
 
 	//TODO : proper template sort of thing ?
 	//main frame
-	u8 colorMain[]={246, 252, 255};
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, colorMain, x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
-	gfxDrawRectangle(screen, GFX_LEFT, colorMain, x, y+9, 63, 276);
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, colorMain, x+roundLut[i], y+294-1-i, 63-roundLut[i]*2, 1);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
+	gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x, y+9, 63, 276);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x+roundLut[i], y+294-1-i, 63-roundLut[i]*2, 1);
 
 	//icon frame
 	u8 colorIcon[]={225, 225, 225};
