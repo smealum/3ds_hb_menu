@@ -214,6 +214,6 @@ void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selec
 
 	//app specific stuff
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
-	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+52, y+66);
-	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+35, y+66);
+	gfxDrawTextN(screen, GFX_LEFT, me->name, 28, x+52, y+66, 0x00, 0x00, 0x00);
+	gfxDrawTextN(screen, GFX_LEFT, me->executablePath, 28, x+35, y+66, 0x00, 0x00, 0x00);
 }

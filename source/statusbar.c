@@ -1,4 +1,8 @@
+#include <stdio.h>
+#include <string.h>
+
 #include "statusbar.h"
+#include "gfx.h"
 
 #include "wifi_full_bin.h"
 #include "wifi_none_bin.h"
@@ -21,8 +25,8 @@ u8* batteryLevels[] = {
 void drawStatusBar(bool wifiStatus, bool charging, int batteryLevel)
 {
 	char timeString[256];
-	sprintf(timeString, "%d:00", osGetTime());
-	gfxDrawText(GFX_TOP, GFX_LEFT, timeString, 50, 100);
+	sprintf(timeString, "%lld:00", osGetTime());
+	gfxDrawText(GFX_TOP, GFX_LEFT, timeString, 50, 100, 0xFF, 0xFF, 0xFF);
 
 	if(wifiStatus)
 	{

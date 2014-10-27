@@ -7,23 +7,24 @@
 #include "text.h"
 #include "costable.h"
 
-void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y)
+void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 x, u16 y, u8 r, u8 g, u8 b)
 {
 	if(!str)return;
 
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
-	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
+	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth, r, g, b);
 }
-void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, u16 x, u16 y)
+
+void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, u16 x, u16 y, u8 r, u8 g, u8 b)
 {
 	if(!str)return;
 
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
-	drawStringN(fbAdr, str, length, y, x-CHAR_SIZE_Y, fbHeight, fbWidth);
+	drawStringN(fbAdr, str, length, y, x-CHAR_SIZE_Y, fbHeight, fbWidth, r, g, b);
 }
 
 void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)
@@ -137,9 +138,9 @@ void gfxDrawSpriteAlphaBlend(gfxScreen_t screen, gfx3dSide_t side, u8* spriteDat
 			if(data[3])
 			{
 				u8 alphaSource = data[3];
-				fbd[0]=((data[0] * alphaSource) / 256)+((fbd[0] * (255 - alphaSource)) / 256);
-				fbd[1]=((data[1] * alphaSource) / 256)+((fbd[1] * (255 - alphaSource)) / 256);
-				fbd[2]=((data[2] * alphaSource) / 256)+((fbd[2] * (255 - alphaSource)) / 256);
+				fbd[0] = ((data[0] * alphaSource)+(fbd[0] * (255 - alphaSource))) / 256;
+				fbd[1] = ((data[1] * alphaSource)+(fbd[1] * (255 - alphaSource))) / 256;
+				fbd[2] = ((data[2] * alphaSource)+(fbd[2] * (255 - alphaSource))) / 256;
 			}
 			fbd+=3;
 			data+=4;
