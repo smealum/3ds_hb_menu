@@ -4,27 +4,30 @@
 #include <3ds.h>
 
 #include "gfx.h"
+#include "font.h"
 #include "text.h"
 #include "costable.h"
 
-void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, char* str, s16 x, s16 y, u8 r, u8 g, u8 b)
+void gfxDrawText(gfxScreen_t screen, gfx3dSide_t side, font_s* f, char* str, s16 x, s16 y)
 {
 	if(!str)return;
+	if(!f)f=&fontDefault;
 
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
-	drawString(fbAdr, str, y, x-CHAR_SIZE_Y, fbHeight, fbWidth, r, g, b);
+	drawString(fbAdr, f, str, y, x, fbHeight, fbWidth);
 }
 
-void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, char* str, u16 length, s16 x, s16 y, u8 r, u8 g, u8 b)
+void gfxDrawTextN(gfxScreen_t screen, gfx3dSide_t side, font_s* f, char* str, u16 length, s16 x, s16 y)
 {
 	if(!str)return;
+	if(!f)f=&fontDefault;
 
 	u16 fbWidth, fbHeight;
 	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
 
-	drawStringN(fbAdr, str, length, y, x-CHAR_SIZE_Y, fbHeight, fbWidth, r, g, b);
+	drawStringN(fbAdr, f, str, length, y, x, fbHeight, fbWidth);
 }
 
 void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 width, u16 height, s16 x, s16 y)

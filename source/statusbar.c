@@ -26,7 +26,7 @@ void drawStatusBar(bool wifiStatus, bool charging, int batteryLevel)
 {
 	char timeString[256];
 	sprintf(timeString, "%lld:00", osGetTime());
-	gfxDrawText(GFX_TOP, GFX_LEFT, timeString, 50, 100, 0xFF, 0xFF, 0xFF);
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, timeString, 30, 100);
 
 	if(wifiStatus)
 	{

@@ -5,6 +5,7 @@ import sys
 from PIL import Image
 
 fntfn = sys.argv[1]
+fontName = sys.argv[2]
 
 def readLine(l):
 	l=l.split()
@@ -19,7 +20,7 @@ fontData=[]
 fontDesc={}
 
 def outputChar(p, c):
-	global fontData, fontDesc
+	global fontData, fontDesc, fontName
 	im = p[c["page"]][1]
 	x, y = int(c["x"]), int(c["y"])
 	w, h = int(c["width"]), int(c["height"])
@@ -32,7 +33,7 @@ def outputChar(p, c):
 		data = []
 		for i in range(w):
 			data.extend([im.getpixel((x+i,y+h-1-j)) for j in range(h)])
-		fontDesc[id] = ("	(charDesc_s){\'%s\', %d, %d, %d, %d, %d, %d, %d, &fontData[%d]},"%(c,x,y,w,h,xo,yo,xa,len(fontData)))
+		fontDesc[id] = ("	(charDesc_s){\'%s\', %d, %d, %d, %d, %d, %d, %d, &%sData[%d]},"%(c,x,y,w,h,xo,yo,xa,fontName,len(fontData)))
 		fontData.extend(data)
 
 def outputFontDesc():
@@ -44,8 +45,8 @@ def outputFontDesc():
 			print("	(charDesc_s){0, 0, 0, 0, 0, 0, 0, 0, NULL},")
 
 def outputFontData():
-	global fontData
-	print("u8 fontData[] = {"+"".join([hex(v)+", " for v in fontData])+"0x00};")
+	global fontData, fontName
+	print("u8 "+fontName+"Data[] = {"+"".join([hex(v)+", " for v in fontData])+"0x00};")
 
 f = open(fntfn, "r")
 pages = {}
@@ -62,7 +63,7 @@ print("#include <3ds.h>")
 print("#include \"font.h\"")
 # print("extern u8 fontData[];")
 # print("typedef struct {char c; int x, y, w, h, xo, yo, xa; u8* data;}charDesc_s;")
-print("charDesc_s fontDesc[] = {")
+print("charDesc_s "+fontName+"Desc[] = {")
 outputFontDesc()
 print("};")
 outputFontData()
