@@ -209,15 +209,27 @@ int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool select
 	//TODO : proper template sort of thing ?
 	//this is all hardcoded and horrible
 
-	const int actualWidth=selected?ENTRY_WIDTH_SELECTED:ENTRY_WIDTH;
+	const int totalWidth=selected?ENTRY_WIDTH_SELECTED:ENTRY_WIDTH;
+	const int actualWidth=(selected?ENTRY_FWIDTH_SELECTED:ENTRY_FWIDTH);
+	const int widthOffset=actualWidth-ENTRY_FWIDTH;
 	const int actualHeight=selected?ENTRY_HEIGHT_SELECTED:ENTRY_HEIGHT;
 	if(selected)y-=ENTRY_HEIGHT_SELECTED-ENTRY_HEIGHT;
-	x-=ENTRY_WIDTH;
+	x-=ENTRY_WIDTH+widthOffset;
+
+	//drop shadow
+	if(selected)
+	{
+		const int sw=4;
+		const int sx=x-sw;
+		for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR_SHADOW, sx+roundLut[i], y+i, sw, 1);
+		gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR_SHADOW, sx, y+9, sw, actualHeight-9*2);
+		for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR_SHADOW, sx+roundLut[i], y+actualHeight-1-i, sw, 1);
+	}
 
 	//main frame
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
-	gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x, y+9, 63, actualHeight-9*2);
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x+roundLut[i], y+actualHeight-1-i, 63-roundLut[i]*2, 1);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x-widthOffset+roundLut[i], y+i, actualWidth-roundLut[i]*2, 1);
+	gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x-widthOffset, y+9, actualWidth, actualHeight-9*2);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x-widthOffset+roundLut[i], y+actualHeight-1-i, actualWidth-roundLut[i]*2, 1);
 
 	//icon frame
 	u8 colorIcon[]={225, 225, 225};
@@ -230,5 +242,5 @@ int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool select
 	gfxDrawTextN(screen, GFX_LEFT, &fontTitle, me->name, 28, x+38, y+66);
 	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->executablePath, 28, x+26, y+66);
 
-	return actualWidth;
+	return totalWidth;
 }

@@ -9,11 +9,13 @@
 #define ENTRY_ICONSIZE (ENTRY_ICON_WIDTH*ENTRY_ICON_HEIGHT*3)
 #define ENTRY_WIDTH (66)
 #define ENTRY_WIDTH_SELECTED (72)
+#define ENTRY_FWIDTH (63)
+#define ENTRY_FWIDTH_SELECTED (63)
 #define ENTRY_HEIGHT (294)
-#define ENTRY_HEIGHT_SELECTED (300)
+#define ENTRY_HEIGHT_SELECTED (298)
 
 #define ENTRY_BGCOLOR (u8[]){246, 252, 255}
-#define ENTRY_BGCOLOR_SELECTED (u8[]){226, 232, 235}
+#define ENTRY_BGCOLOR_SHADOW (u8[]){34, 153, 183}
 
 #define fptToInt(v) ((v)>>10)
 #define intToFpt(v) ((v)<<10)
