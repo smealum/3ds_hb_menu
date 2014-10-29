@@ -2,6 +2,7 @@
 #include <string.h>
 #include <3ds.h>
 
+#include "text.h"
 #include "menu.h"
 
 u8 roundLut[]={8, 5, 4, 3, 2, 1, 1, 1, 0};
@@ -95,14 +96,14 @@ void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
 	addMenuEntry(m, me2);
 }
 
-void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, u8* iconData)
+void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData)
 {
 	if(!m || !name || !description || !iconData)return;
 
 	menuEntry_s* me=malloc(sizeof(menuEntry_s));
 	if(!me)return;
 
-	initMenuEntry(me, execPath, name, description, iconData);
+	initMenuEntry(me, execPath, name, description, author, iconData);
 	
 	addMenuEntry(m, me);
 }
@@ -189,7 +190,7 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->next=NULL;
 }
 
-void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData)
+void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData)
 {
 	if(!me)return;
 
@@ -198,6 +199,7 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	strncpy(me->executablePath, execPath, ENTRY_PATHLENGTH);
 	strncpy(me->name, name, ENTRY_NAMELENGTH);
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
+	strncpy(me->author, author, ENTRY_AUTHORLENGTH);
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 }
 
@@ -239,8 +241,9 @@ int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool select
 
 	//app specific stuff
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
-	gfxDrawTextN(screen, GFX_LEFT, &fontTitle, me->name, 28, x+38, y+66);
-	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->executablePath, 28, x+26, y+66);
+	gfxDrawTextN(screen, GFX_LEFT, &fontTitle, me->name, ENTRY_NAMELENGTH, x+38, y+66);
+	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description, ENTRY_DESCLENGTH, x+26, y+70);
+	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->author, ENTRY_AUTHORLENGTH, x+4, y+ENTRY_HEIGHT-getStringLength(&fontDescription, me->author)-10);
 
 	return totalWidth;
 }

@@ -37,4 +37,4 @@ typedef struct
 	u16 bigIconData[0x900];
 }smdh_s;
 
-int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData);
+int extractSmdhData(smdh_s* s, char* name, char* desc, char* auth, u8* iconData);

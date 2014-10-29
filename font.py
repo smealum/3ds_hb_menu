@@ -26,15 +26,18 @@ def outputChar(p, c):
 	w, h = int(c["width"]), int(c["height"])
 	xo, yo = int(c["xoffset"]), int(c["yoffset"])
 	id, xa = int(c["id"]), int(c["xadvance"])
-	c = chr(id)
-	c = c if c!="'" else "\\'"
-	c = c if c!="\\" else "\\\\"
 	if id<164:
-		data = []
-		for i in range(w):
-			data.extend([im.getpixel((x+i,y+h-1-j)) for j in range(h)])
-		fontDesc[id] = ("	(charDesc_s){\'%s\', %d, %d, %d, %d, %d, %d, %d, &%sData[%d]},"%(c,x,y,w,h,xo,yo,xa,fontName,len(fontData)))
-		fontData.extend(data)
+		c = chr(id)
+		c = c if c!="'" else "\\'"
+		c = c if c!="\\" else "\\\\"
+		c = "\'"+c+"\'"
+	else:
+		c = str(id)
+	data = []
+	for i in range(w):
+		data.extend([im.getpixel((x+i,y+h-1-j)) for j in range(h)])
+	fontDesc[id] = ("	(charDesc_s){%s, %d, %d, %d, %d, %d, %d, %d, &%sData[%d]},"%(c,x,y,w,h,xo,yo,xa,fontName,len(fontData)))
+	fontData.extend(data)
 
 def outputFontDesc():
 	global fontDesc

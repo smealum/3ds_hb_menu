@@ -15,7 +15,7 @@ int drawCharacter(u8* fb, font_s* f, char c, s16 x, s16 y, u16 w, u16 h)
 	charDesc_s* cd=&f->desc[(int)c];
 	if(!cd->data)return 0;
 	x+=cd->xo; y+=f->height-cd->yo-cd->h;
-	if(x<0 || x+cd->w>=w || y<-cd->h || y>=h+cd->h)return 0;
+	if(x<0 || x+cd->w>=w || y<-cd->h || y>=h+cd->h)return cd->xa;
 	u8* charData=cd->data;
 	int i, j;
 	s16 cy=y, ch=cd->h, cyo=0;
@@ -41,6 +41,14 @@ int drawCharacter(u8* fb, font_s* f, char c, s16 x, s16 y, u16 w, u16 h)
 		fb+=(h-ch)*3;
 	}
 	return cd->xa;
+}
+
+int getStringLength(font_s* f, char* str)
+{
+	if(!f)f=&fontDefault;
+	if(!str)return 0;
+	int ret; for(ret=0;*str;ret+=f->desc[(int)*str++].xa);
+	return ret;
 }
 
 void drawString(u8* fb, font_s* f, char* str, s16 x, s16 y, u16 w, u16 h)

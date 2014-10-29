@@ -82,11 +82,11 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	if(!ret)
 	{
 		initEmptyMenuEntry(&tmpEntry);
-		ret=extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.iconData);
+		ret=extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.author, tmpEntry.iconData);
 		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
 	}
 
-	if(ret)initMenuEntry(&tmpEntry, execPath, path, "", (u8*)installerIcon_bin);
+	if(ret)initMenuEntry(&tmpEntry, execPath, path, execPath, "Unknown publisher", (u8*)installerIcon_bin);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }

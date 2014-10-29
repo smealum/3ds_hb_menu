@@ -14,13 +14,14 @@ static inline void putPixel565(u8* dst, u8 x, u8 y, u16 v)
 	dst[((47-y)+x*48)*3+2]=((v>>11)&0x1F)<<3;
 }
 
-int extractSmdhData(smdh_s* s, char* name, char* desc, u8* iconData)
+int extractSmdhData(smdh_s* s, char* name, char* desc, char* auth, u8* iconData)
 {
 	if(!s)return -1;
 	if(s->header.magic!=0x48444D53)return -2;
 
 	if(name)unicodeToChar(name, s->applicationTitles[1].shortDescription, 0x40);
 	if(desc)unicodeToChar(desc, s->applicationTitles[1].longDescription, 0x80);
+	if(auth)unicodeToChar(auth, s->applicationTitles[1].publisher, 0x40);
 	if(iconData)
 	{
 		u16* data=s->bigIconData;
