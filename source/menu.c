@@ -27,9 +27,14 @@ void initMenu(menu_s* m)
 	m->atEquilibrium=false;
 }
 
+static inline s16 getEntryLocationPx(menu_s* m, int px)
+{
+	return 240-px+fptToInt(m->scrollLocation);
+}
+
 static inline s16 getEntryLocation(menu_s* m, int n)
 {
-	return 240-(n+1)*ENTRY_WIDTH+fptToInt(m->scrollLocation);
+	return getEntryLocationPx(m, (n+1)*ENTRY_WIDTH);
 }
 
 void drawScrollBar(menu_s* m)
@@ -58,9 +63,10 @@ void drawMenu(menu_s* m)
 
 	menuEntry_s* me=m->entries;
 	int i=0;
+	int h=0;
 	while(me)
 	{
-		drawMenuEntry(me, GFX_BOTTOM, getEntryLocation(m,i), 9, i==m->selectedEntry);
+		h+=drawMenuEntry(me, GFX_BOTTOM, getEntryLocationPx(m,h), 9, i==m->selectedEntry);
 		me=me->next;
 		i++;
 	}
@@ -195,16 +201,23 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 }
 
-void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
+int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
 {
-	if(!me)return;
+	if(!me)return 0;
 	int i;
 
 	//TODO : proper template sort of thing ?
+	//this is all hardcoded and horrible
+
+	const int actualWidth=selected?ENTRY_WIDTH_SELECTED:ENTRY_WIDTH;
+	const int actualHeight=selected?ENTRY_HEIGHT_SELECTED:ENTRY_HEIGHT;
+	if(selected)y-=ENTRY_HEIGHT_SELECTED-ENTRY_HEIGHT;
+	x-=ENTRY_WIDTH;
+
 	//main frame
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
-	gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x, y+9, 63, 276);
-	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, selected?(ENTRY_BGCOLOR_SELECTED):(ENTRY_BGCOLOR), x+roundLut[i], y+294-1-i, 63-roundLut[i]*2, 1);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x+roundLut[i], y+i, 63-roundLut[i]*2, 1);
+	gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x, y+9, 63, actualHeight-9*2);
+	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x+roundLut[i], y+actualHeight-1-i, 63-roundLut[i]*2, 1);
 
 	//icon frame
 	u8 colorIcon[]={225, 225, 225};
@@ -216,4 +229,6 @@ void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selec
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
 	gfxDrawTextN(screen, GFX_LEFT, &fontTitle, me->name, 28, x+38, y+66);
 	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->executablePath, 28, x+26, y+66);
+
+	return actualWidth;
 }

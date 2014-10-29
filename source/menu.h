@@ -7,7 +7,10 @@
 #define ENTRY_ICON_WIDTH (48)
 #define ENTRY_ICON_HEIGHT (48)
 #define ENTRY_ICONSIZE (ENTRY_ICON_WIDTH*ENTRY_ICON_HEIGHT*3)
-#define ENTRY_WIDTH (65)
+#define ENTRY_WIDTH (66)
+#define ENTRY_WIDTH_SELECTED (72)
+#define ENTRY_HEIGHT (294)
+#define ENTRY_HEIGHT_SELECTED (300)
 
 #define ENTRY_BGCOLOR (u8[]){246, 252, 255}
 #define ENTRY_BGCOLOR_SELECTED (u8[]){226, 232, 235}
@@ -49,4 +52,4 @@ menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 //menu entry stuff
 void initEmptyMenuEntry(menuEntry_s* me);
 void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, u8* iconData);
-void drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);
+int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);

@@ -48,7 +48,7 @@ charDesc_s font2Desc[] = {
 	(charDesc_s){',', 64, 34, 2, 3, 0, 9, 2, &font2Data[330]},
 	(charDesc_s){'-', 107, 33, 3, 1, 0, 7, 4, &font2Data[336]},
 	(charDesc_s){'.', 115, 32, 2, 1, 0, 9, 2, &font2Data[339]},
-	(charDesc_s){'/', 6, 10, 5, 8, 0, 3, 3, &font2Data[341]},
+	(charDesc_s){'/', 6, 10, 5, 8, -1, 3, 3, &font2Data[341]},
 	(charDesc_s){'0', 226, 17, 5, 7, 0, 3, 5, &font2Data[381]},
 	(charDesc_s){'1', 70, 26, 3, 7, 0, 3, 5, &font2Data[416]},
 	(charDesc_s){'2', 232, 17, 5, 7, 0, 3, 5, &font2Data[437]},
