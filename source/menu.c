@@ -276,7 +276,16 @@ int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool select
 	//app specific stuff
 	gfxDrawSprite(screen, GFX_LEFT, me->iconData, ENTRY_ICON_WIDTH, ENTRY_ICON_HEIGHT, x+7, y+8);
 	gfxDrawTextN(screen, GFX_LEFT, &fontTitle, me->name, ENTRY_NAMELENGTH, x+38, y+66);
-	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description, ENTRY_DESCLENGTH, x+26, y+70);
+	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description, 56, x+26, y+70);
+	if(strlen(me->description) > 56 * 1)
+	{
+		gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description + 56, 56, x+18, y+70);
+	}
+	else if(strlen(me->description) > 56 * 2)
+	{
+		gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description + 56 * 1, 56, x+18, y+70);
+		gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->description + 56 * 2, 56, x+10, y+70);
+	}
 	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->author, ENTRY_AUTHORLENGTH, x+4, y+ENTRY_HEIGHT-getStringLength(&fontDescription, me->author)-10);
 
 	return totalWidth;
