@@ -22,11 +22,20 @@ u8* batteryLevels[] = {
 	(u8*)battery_full_bin,
 };
 
+#define SECONDS_IN_DAY 86400
+#define SECONDS_IN_HOUR 3600
+#define SECOND_IN_MINUTE 60
+
 void drawStatusBar(bool wifiStatus, bool charging, int batteryLevel)
 {
+	u64 timeInSeconds = osGetTime() / 1000;
+	u64 dayTime = timeInSeconds % SECONDS_IN_DAY;
+	u16 hour = dayTime / SECONDS_IN_HOUR;
+	u16 min = (dayTime % SECONDS_IN_HOUR) / SECOND_IN_MINUTE;
+
 	char timeString[256];
-	sprintf(timeString, "%lld:00", osGetTime());
-	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, timeString, 30, 100);
+	sprintf(timeString, "%d:%d", hour, min);
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, timeString, 240 - 18, 400 / 2 - 12);
 
 	if(wifiStatus)
 	{
