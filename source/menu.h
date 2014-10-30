@@ -40,6 +40,7 @@ typedef struct
 	s32 scrollLocation; //10 bit fixed point
 	s32 scrollVelocity; //10 bit fixed point
 	s32 scrollBarSize;
+	s32 currentScrollBarSize;
 	s32 scrollBarPos;
 	bool atEquilibrium;
 }menu_s;

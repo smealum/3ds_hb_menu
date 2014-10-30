@@ -54,8 +54,8 @@ void drawScrollBar(menu_s* m)
 	// actual scrollbar
 		u8 color[]={255, 255, 255};
 		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38-i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
-		gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38, 308, m->scrollBarSize, 7);
-		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38+m->scrollBarSize+i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
+		gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38, 308, m->currentScrollBarSize, 7);
+		for(i=0; i<3; i++)gfxDrawRectangle(GFX_BOTTOM, GFX_LEFT, color, 200-scrollBarTotalSize-m->scrollBarPos+38+m->currentScrollBarSize+i, 308+roundLut3[i], 1, 7-2*roundLut3[i]);
 }
 
 void drawMenu(menu_s* m)
@@ -151,7 +151,7 @@ bool updateMenu(menu_s* m)
 			m->scrollVelocity+=(intToFpt(240-ENTRY_WIDTH)-m->scrollTarget)/SCROLLING_SPEED;
 		if(m->scrollTarget<0 || (m->selectedEntry==m->numEntries-1 && m->numEntries>3))
 			m->scrollVelocity+=(intToFpt(0)-m->scrollTarget)/SCROLLING_SPEED;
-	}else{
+	}else if(m->numEntries>3){
 		s32 val=-cstick.dy*16; // TODO : make it inversely proportional to numEntries ?
 		if(m->scrollLocation>intToFpt(-maxScroll))
 		{
@@ -166,15 +166,28 @@ bool updateMenu(menu_s* m)
 	m->scrollLocation+=m->scrollVelocity;
 	m->scrollVelocity=(m->scrollVelocity*3)/4;
 
-	m->scrollBarSize=40; //TEMP : make it adaptive ?
+	m->scrollBarSize=40; //TEMP : make it adaptive to number of menu entries ?
 	m->scrollBarPos=-fptToInt(m->scrollLocation*(200-m->scrollBarSize))/maxScroll;
+	if(m->scrollBarPos<0)
+	{
+		m->currentScrollBarSize=m->scrollBarSize+m->scrollBarPos;
+		if(m->currentScrollBarSize<10)m->currentScrollBarSize=10;
+		m->scrollBarPos=m->currentScrollBarSize-m->scrollBarSize;
+	}else if(m->scrollBarPos>=200-m->scrollBarSize)
+	{
+		m->currentScrollBarSize=-(m->scrollBarPos-200);
+		if(m->currentScrollBarSize<10)m->currentScrollBarSize=10;
+		debugValues[3]=m->scrollBarPos-200;
+		m->scrollBarPos=200-m->scrollBarSize;
+	}else m->currentScrollBarSize=m->scrollBarSize;
 
 	if(!m->scrollVelocity)m->atEquilibrium=true;
 
 	debugValues[0]=m->scrollLocation;
-	debugValues[1]=m->scrollTarget;
-	debugValues[2]=intToFpt(maxScroll);
-	debugValues[3]=maxScroll;
+	// debugValues[1]=m->scrollTarget;
+	debugValues[1]=fptToInt(m->scrollLocation);
+	// debugValues[2]=intToFpt(maxScroll);
+	// debugValues[3]=maxScroll;
 
 	return false;
 }
