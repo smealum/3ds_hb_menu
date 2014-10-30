@@ -96,6 +96,27 @@ void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
 	addMenuEntry(m, me2);
 }
 
+void clearMenuEntries(menu_s* m)
+{
+	if(!m)return;
+
+	m->selectedEntry=0;
+	drawScrollBar(m);
+
+	menuEntry_s* me = m->entries;
+	menuEntry_s* temp = NULL;
+	while(me)
+	{
+		temp=me->next;
+		free(me);
+		me->next = NULL;
+		me = temp;
+	}
+
+	m->numEntries = 0;
+	m->entries = NULL;
+}
+
 void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData)
 {
 	if(!m || !name || !description || !iconData)return;

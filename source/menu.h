@@ -51,6 +51,7 @@ void drawMenu(menu_s* m);
 bool updateMenu(menu_s* m);
 void addMenuEntry(menu_s* m, menuEntry_s* me);
 void addMenuEntryCopy(menu_s* m, menuEntry_s* me);
+void clearMenuEntries(menu_s* m);
 void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData);
 menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 

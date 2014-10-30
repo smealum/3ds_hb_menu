@@ -23,7 +23,7 @@ void drawDebug()
 	char str[256];
 	// sprintf(str, "hello3 %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	sprintf(str, "hello3 %d %d %d %d\n", debugValues[0], debugValues[1], debugValues[2], debugValues[3]);
-	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 0, 100);
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
 }
 
 void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
@@ -92,8 +92,9 @@ int main()
 {
 	srvInit();
 	aptInit();
-	initFilesystem();
 	gfxInit();
+	initFilesystem();
+	openSDArchive();
 	hidInit(NULL);
 	irrstInit(NULL);
 	acInit();
@@ -102,7 +103,15 @@ int main()
 	initBackground();
 	
 	initMenu(&menu);
-	scanHomebrewDirectory(&menu, "/3ds/");
+
+	u32 sdmcCurrent = 0;
+	u32 sdmcPrevious = 0;
+	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+	if(sdmcCurrent == 1)
+	{
+		scanHomebrewDirectory(&menu, "/3ds/");
+	}
+	sdmcPrevious = sdmcCurrent;
 
 	srand(svcGetSystemTick());
 
@@ -111,6 +120,20 @@ int main()
 	{
 		if(status == APP_RUNNING)
 		{
+			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+		
+			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
+			{
+				closeSDArchive();
+				openSDArchive();
+				scanHomebrewDirectory(&menu, "/3ds/");
+			}
+			else if(sdmcCurrent < 1 && sdmcPrevious == 1)
+			{
+				clearMenuEntries(&menu);
+			}
+			sdmcPrevious = sdmcCurrent;
+			
 			ACU_GetWifiStatus(NULL, &wifiStatus);
 			PTMU_GetBatteryLevel(NULL, &batteryLevel);
 			PTMU_GetBatteryChargeState(NULL, &charging);
@@ -123,6 +146,15 @@ int main()
 
 			if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 			else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+
+			if(sdmcCurrent < 0)
+			{
+				gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Error detecting SD Card", 0, 400 / 2 - 88);
+			}
+			else if(sdmcCurrent == 0)
+			{
+				gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Please insert an SD card", 0, 400 / 2 - 96);
+			}
 
 			gfxFlushBuffers();
 			gfxSwapBuffers();
@@ -149,6 +181,7 @@ int main()
 	hidExit();
 	gfxExit();
 	exitFilesystem();
+	closeSDArchive();
 	aptExit();
 	srvExit();
 

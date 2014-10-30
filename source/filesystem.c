@@ -13,14 +13,22 @@ FS_archive sdmcArchive;
 void initFilesystem(void)
 {
 	fsInit();
-	sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
-	FSUSER_OpenArchive(NULL, &sdmcArchive);
 }
 
 void exitFilesystem(void)
 {
-	FSUSER_CloseArchive(NULL, &sdmcArchive);
 	fsExit();
+}
+
+void openSDArchive()
+{
+	sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	FSUSER_OpenArchive(NULL, &sdmcArchive);
+}
+
+void closeSDArchive()
+{
+	FSUSER_CloseArchive(NULL, &sdmcArchive);
 }
 
 int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
