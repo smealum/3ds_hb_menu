@@ -115,58 +115,46 @@ int main()
 
 	srand(svcGetSystemTick());
 
-	APP_STATUS status;
-	while((status=aptGetStatus())!=APP_EXITING)
+	while(aptMainLoop())
 	{
-		if(status == APP_RUNNING)
-		{
-			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+		FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 		
-			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
-			{
-				closeSDArchive();
-				openSDArchive();
-				scanHomebrewDirectory(&menu, "/3ds/");
-			}
-			else if(sdmcCurrent < 1 && sdmcPrevious == 1)
-			{
-				clearMenuEntries(&menu);
-			}
-			sdmcPrevious = sdmcCurrent;
+		if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
+		{
+			closeSDArchive();
+			openSDArchive();
+			scanHomebrewDirectory(&menu, "/3ds/");
+		}
+		else if(sdmcCurrent < 1 && sdmcPrevious == 1)
+		{
+			clearMenuEntries(&menu);
+		}
+		sdmcPrevious = sdmcCurrent;
 			
-			ACU_GetWifiStatus(NULL, &wifiStatus);
-			PTMU_GetBatteryLevel(NULL, &batteryLevel);
-			PTMU_GetBatteryChargeState(NULL, &charging);
-			hidScanInput();
+		ACU_GetWifiStatus(NULL, &wifiStatus);
+		PTMU_GetBatteryLevel(NULL, &batteryLevel);
+		PTMU_GetBatteryChargeState(NULL, &charging);
+		hidScanInput();
 
-			updateBackground();
+		updateBackground();
 
-			if(secretCode())brewMode = true;
-			else if(updateMenu(&menu))break;
+		if(secretCode())brewMode = true;
+		else if(updateMenu(&menu))break;
 
-			if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
-			else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
+		if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
+		else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
 
-			if(sdmcCurrent < 0)
-			{
-				gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Error detecting SD Card", 0, 400 / 2 - 88);
-			}
-			else if(sdmcCurrent == 0)
-			{
-				gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Please insert an SD card", 0, 400 / 2 - 96);
-			}
-
-			gfxFlushBuffers();
-			gfxSwapBuffers();
-		}
-		else if(status == APP_SUSPENDING)
+		if(sdmcCurrent < 0)
 		{
-			aptReturnToMenu();
+			gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Error detecting SD Card", 0, 400 / 2 - 88);
 		}
-		else if(status == APP_SLEEPMODE)
+		else if(sdmcCurrent == 0)
 		{
-			aptWaitStatusEvent();
+			gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Please insert an SD card", 0, 400 / 2 - 96);
 		}
+
+		gfxFlushBuffers();
+		gfxSwapBuffers();
 
 		//TEMP
 		if(hidKeysDown()&KEY_START)*(u32*)NULL=0xDEADBABE; // trigger crash to reboot console
