@@ -8,8 +8,10 @@
 #include "background.h"
 #include "statusbar.h"
 #include "filesystem.h"
+#include "error.h"
 
 bool brewMode = false;
+u32 sdmcCurrent = 0;
 
 menu_s menu;
 u32 wifiStatus = 0;
@@ -38,7 +40,25 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawDebug();
 
 	//menu stuff
-	drawMenu(&menu);
+	if(!sdmcCurrent)
+	{
+		//no SD
+		drawError(GFX_BOTTOM,
+			"No SD detected",
+			"    It looks like your 3DS doesn't have an SD inserted into it.\n"
+			"    Please insert an SD card for optimal homebrew launcher performance !\n");
+	}else if(sdmcCurrent<0)
+	{
+		//SD error
+		drawError(GFX_BOTTOM,
+			"SD Error",
+			"    Something unexpected happened when trying to mount your SD card.\n"
+			"    Try taking it out and putting it back in. If that doesn't work,\n"
+			"please try again with another SD card.");
+	}else{
+		//got SD
+		drawMenu(&menu);
+	}
 }
 
 extern void (*__system_retAddr)(void);
@@ -101,10 +121,9 @@ int main()
 	ptmInit();
 
 	initBackground();
-	
+	initErrors();
 	initMenu(&menu);
 
-	u32 sdmcCurrent = 0;
 	u32 sdmcPrevious = 0;
 	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 	if(sdmcCurrent == 1)
@@ -143,15 +162,6 @@ int main()
 
 		if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 		else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
-
-		if(sdmcCurrent < 0)
-		{
-			gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Error detecting SD Card", 0, 400 / 2 - 88);
-		}
-		else if(sdmcCurrent == 0)
-		{
-			gfxDrawText(GFX_TOP, GFX_LEFT, NULL, "Please insert an SD card", 0, 400 / 2 - 96);
-		}
 
 		gfxFlushBuffers();
 		gfxSwapBuffers();
