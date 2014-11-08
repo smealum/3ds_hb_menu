@@ -4,6 +4,7 @@
 
 #include "text.h"
 #include "menu.h"
+#include "error.h"
 
 u8 roundLut[]={8, 5, 4, 3, 2, 1, 1, 1, 0};
 u8 roundLut2[]={4, 3, 2, 1, 0};
@@ -62,14 +63,26 @@ void drawMenu(menu_s* m)
 {
 	if(!m)return;
 
-	menuEntry_s* me=m->entries;
-	int i=0;
-	int h=0;
-	while(me)
+	if(!m->numEntries)
 	{
-		h+=drawMenuEntry(me, GFX_BOTTOM, getEntryLocationPx(m,h), 9, i==m->selectedEntry);
-		me=me->next;
-		i++;
+		drawError(GFX_BOTTOM,
+			"Error",
+			"    It seems you don't have any homebrew applications installed on your\n"
+			"SD card.\n"
+			"    Please take out your SD card, create a folder named \"3ds\" at the root of\n"
+			"your card and place homebrew there.\n"
+			"    Then, simply insert your SD card back into your 3DS !\n"
+			"    The homebrew launcher will take it from there.");
+	}else{
+		menuEntry_s* me=m->entries;
+		int i=0;
+		int h=0;
+		while(me)
+		{
+			h+=drawMenuEntry(me, GFX_BOTTOM, getEntryLocationPx(m,h), 9, i==m->selectedEntry);
+			me=me->next;
+			i++;
+		}
 	}
 
 	drawScrollBar(m);
@@ -142,6 +155,7 @@ menuEntry_s* getMenuEntry(menu_s* m, u16 n)
 bool updateMenu(menu_s* m)
 {
 	if(!m)return false;
+	if(!m->numEntries)return false;
 
 	//controls
 	s8 move=0;
