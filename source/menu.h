@@ -42,6 +42,8 @@ typedef struct
 	s32 scrollBarSize;
 	s32 currentScrollBarSize;
 	s32 scrollBarPos;
+	touchPosition previousTouch, firstTouch;
+	u16 touchTimer;
 	bool atEquilibrium;
 }menu_s;
 

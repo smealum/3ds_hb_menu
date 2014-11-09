@@ -160,7 +160,9 @@ bool updateMenu(menu_s* m)
 	//controls
 	s8 move=0;
 	circlePosition cstick;
+	touchPosition touch;
 	hidCstickRead(&cstick);
+	hidTouchRead(&touch);
 
 	if(hidKeysDown()&KEY_DOWN)move++;
 	if(hidKeysDown()&KEY_UP)move--;
@@ -168,6 +170,30 @@ bool updateMenu(menu_s* m)
 	if(hidKeysDown()&KEY_LEFT)move-=4;
 
 	u16 oldEntry=m->selectedEntry;
+
+	if(hidKeysDown()&KEY_TOUCH)
+	{
+		m->touchTimer=0;
+		m->firstTouch=touch;
+	}else if((hidKeysUp()&KEY_TOUCH) && m->touchTimer<30 && abs(m->firstTouch.px-m->previousTouch.px)+abs(m->firstTouch.py-m->previousTouch.py)<12){
+		menuEntry_s* me=m->entries;
+		int i=0;
+		int p=0;
+		while(me)
+		{
+			int h=(i==m->selectedEntry)?ENTRY_WIDTH_SELECTED:ENTRY_WIDTH;
+			if((240-m->previousTouch.py)>=getEntryLocationPx(m,p)-h && (240-m->previousTouch.py)<getEntryLocationPx(m,p))break;
+			p+=h;
+			me=me->next;
+			i++;
+		}
+		if(m->selectedEntry==i)return true;
+		else m->selectedEntry=i;
+	}else if(hidKeysHeld()&KEY_TOUCH){
+		//condition to make sure previousTouch is valid
+		cstick.dy+=(touch.py-m->previousTouch.py)*16;
+		m->touchTimer++;
+	}
 	if(move+m->selectedEntry<0)m->selectedEntry=0;
 	else if(move+m->selectedEntry>=m->numEntries)m->selectedEntry=m->numEntries-1;
 	else m->selectedEntry+=move;
@@ -175,6 +201,8 @@ bool updateMenu(menu_s* m)
 	if(m->selectedEntry!=oldEntry)m->atEquilibrium=false;
 
 	if(hidKeysDown()&KEY_A)return true;
+
+	m->previousTouch=touch;
 
 	//scrolling code
 	const int maxScroll=240-(m->numEntries)*ENTRY_WIDTH; //cf getEntryLocation
@@ -218,9 +246,9 @@ bool updateMenu(menu_s* m)
 
 	if(!m->scrollVelocity)m->atEquilibrium=true;
 
-	debugValues[0]=m->scrollLocation;
+	// debugValues[0]=m->scrollLocation;
 	// debugValues[1]=m->scrollTarget;
-	debugValues[1]=fptToInt(m->scrollLocation);
+	// debugValues[1]=fptToInt(m->scrollLocation);
 	// debugValues[2]=intToFpt(maxScroll);
 	// debugValues[3]=maxScroll;
 
