@@ -10,6 +10,9 @@
 #include "filesystem.h"
 #include "error.h"
 
+#define CN_BOOTLOADER_LOC 0x000F0000
+#define CN_ARGSETTER_LOC 0x000F2000
+
 bool brewMode = false;
 u32 sdmcCurrent = 0;
 
@@ -66,7 +69,7 @@ static Handle hbHandle;
 static void launchFile(void)
 {
 	//jump to bootloader
-	void (*callBootloader)(Handle h, Handle file)=(void*)0x000F0000;
+	void (*callBootloader)(Handle hb, Handle file)=(void*)CN_BOOTLOADER_LOC;
 	callBootloader(0x00000000, hbHandle);
 }
 
@@ -185,9 +188,16 @@ int main()
 
 	//open file that we're going to boot up
 	fsInit();
-	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry); //TODO : check that it's not NULL ?
+	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry);
 	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &hbHandle, sdmcArchive, FS_makePath(PATH_CHAR, me->executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	fsExit();
+
+	//set argv/argc
+	static u32 argbuffer[0x200];
+	void (*setArgs)(u32* src, u32 length)=(void*)CN_ARGSETTER_LOC;
+	argbuffer[0]=1;
+	strcpy((char*)&argbuffer[1], me->executablePath);
+	setArgs(argbuffer, 0x200*4);
 
 	// Override return address to homebrew booting code
 	__system_retAddr = launchFile;
