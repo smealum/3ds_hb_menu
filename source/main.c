@@ -9,9 +9,7 @@
 #include "statusbar.h"
 #include "filesystem.h"
 #include "error.h"
-
-#define CN_BOOTLOADER_LOC 0x000F0000
-#define CN_ARGSETTER_LOC 0x000F2000
+#include "hb.h"
 
 bool brewMode = false;
 u32 sdmcCurrent = 0;
@@ -66,10 +64,12 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 
 extern void (*__system_retAddr)(void);
 static Handle hbHandle;
+void (*callBootloader)(Handle hb, Handle file);
+void (*setArgs)(u32* src, u32 length);
+
 static void launchFile(void)
 {
 	//jump to bootloader
-	void (*callBootloader)(Handle hb, Handle file)=(void*)CN_BOOTLOADER_LOC;
 	callBootloader(0x00000000, hbHandle);
 }
 
@@ -122,6 +122,7 @@ int main()
 	irrstInit(NULL);
 	acInit();
 	ptmInit();
+	initHb();
 
 	initBackground();
 	initErrors();
@@ -175,7 +176,11 @@ int main()
 		gspWaitForVBlank();
 	}
 
+	//get bootloader addresses before exiting everything
+	HB_GetBootloaderAddresses((void**)&callBootloader, (void**)&setArgs);
+
 	// cleanup whatever we have to cleanup
+	exitHb();
 	ptmExit();
 	acExit();
 	irrstExit();
@@ -194,7 +199,6 @@ int main()
 
 	//set argv/argc
 	static u32 argbuffer[0x200];
-	void (*setArgs)(u32* src, u32 length)=(void*)CN_ARGSETTER_LOC;
 	argbuffer[0]=1;
 	strcpy((char*)&argbuffer[1], me->executablePath);
 	setArgs(argbuffer, 0x200*4);
