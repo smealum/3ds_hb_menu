@@ -74,17 +74,44 @@ bool fileExists(char* path, FS_archive* archive)
 
 extern int debugValues[4];
 
+void addFileToMenu(menu_s* m, char* execPath)
+{
+	if(!m || !execPath)return;
+
+	static menuEntry_s tmpEntry;
+
+	if(!fileExists(execPath, &sdmcArchive))return;
+
+	int i, l=-1; for(i=0; execPath[i]; i++) if(execPath[i]=='/')l=i;
+
+	initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
+
+	addMenuEntryCopy(m, &tmpEntry);
+}
+
 void addDirectoryToMenu(menu_s* m, char* path)
 {
+	if(!m || !path)return;
+
 	static menuEntry_s tmpEntry;
 	static smdh_s tmpSmdh;
 	static char execPath[128];
 	static char iconPath[128];
 
-	snprintf(execPath, 128, "%s/boot.3dsx", path);
-	if(!fileExists(execPath, &sdmcArchive))return;
+	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/')l=i;
 
+	snprintf(execPath, 128, "%s/boot.3dsx", path);
+	if(!fileExists(execPath, &sdmcArchive))
+	{
+		snprintf(execPath, 128, "%s/%s.3dsx", path, &path[l+1]);
+		if(!fileExists(execPath, &sdmcArchive))return;
+	}
+
+	bool icon=false;
 	snprintf(iconPath, 128, "%s/icon.bin", path);
+	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/icon.smdh", path);
+	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/%s.smdh", path, &path[l+1]);
+
 	int ret=loadFile(iconPath, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
 	
 	if(!ret)
@@ -94,7 +121,7 @@ void addDirectoryToMenu(menu_s* m, char* path)
 		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
 	}
 
-	if(ret)initMenuEntry(&tmpEntry, execPath, path, execPath, "Unknown publisher", (u8*)installerIcon_bin);
+	if(ret)initMenuEntry(&tmpEntry, execPath, &path[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }
@@ -107,19 +134,25 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 	FS_path dirPath=FS_makePath(PATH_CHAR, path);
 	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
 	
+	static char fullPath[1024];
 	u32 entriesRead=0;
 	do
 	{
 		static FS_dirent entry;
 		memset(&entry,0,sizeof(FS_dirent));
 		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
-		if(entriesRead && entry.isDirectory) //only grab directories
+		if(entriesRead && entry.isDirectory) //directories
 		{
-			static char fullPath[1024];
 			strncpy(fullPath, path, 1024);
 			int n=strlen(fullPath);
 			unicodeToChar(&fullPath[n], entry.name, 1024-n);
 			addDirectoryToMenu(m, fullPath);
+		}else{ //stray executables
+			strncpy(fullPath, path, 1024);
+			int n=strlen(fullPath);
+			unicodeToChar(&fullPath[n], entry.name, 1024-n);
+			n=strlen(fullPath);
+			if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addFileToMenu(m, fullPath);
 		}
 	}while(entriesRead);
 
