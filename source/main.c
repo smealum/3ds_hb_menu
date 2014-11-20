@@ -18,6 +18,7 @@ menu_s menu;
 u32 wifiStatus = 0;
 u8 batteryLevel = 5;
 u8 charging = 0;
+int rebootCounter;
 
 int debugValues[100];
 
@@ -41,7 +42,15 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawDebug();
 
 	//menu stuff
-	if(!sdmcCurrent)
+	if(rebootCounter<257)
+	{
+		//about to reboot
+		drawError(GFX_BOTTOM,
+			"Reboot",
+			"    You're about to reboot your console into home menu.\n\n"
+			"                                                                                            A : Proceed\n"
+			"                                                                                            B : Cancel\n");
+	}else if(!sdmcCurrent)
 	{
 		//no SD
 		drawError(GFX_BOTTOM,
@@ -138,7 +147,7 @@ int main()
 
 	srand(svcGetSystemTick());
 
-	int rebootCounter=256;
+	rebootCounter=257;
 
 	while(aptMainLoop())
 	{
@@ -163,13 +172,27 @@ int main()
 
 		updateBackground();
 
-		if(secretCode())brewMode = true;
-		else if(updateMenu(&menu))break;
+		if(rebootCounter==256)
+		{
+			if(hidKeysDown()&KEY_A)
+			{
+				//reboot
+				aptOpenSession();
+					APT_HardwareResetAsync(NULL);
+				aptCloseSession();
+				rebootCounter--;
+			}else if(hidKeysDown()&KEY_B)
+			{
+				rebootCounter++;
+			}
+		}else if(rebootCounter==257){
+			if(hidKeysDown()&KEY_START)rebootCounter--;
+			if(secretCode())brewMode = true;
+			else if(updateMenu(&menu))break;
+		}
 
 		if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 		else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
-
-		debugValues[0]=rebootCounter;
 
 		if(rebootCounter<256)
 		{
@@ -181,16 +204,6 @@ int main()
 
 		gfxFlushBuffers();
 		gfxSwapBuffers();
-
-		if(hidKeysDown()&KEY_START)
-		{
-			//reboot
-			aptOpenSession();
-				APT_HardwareResetAsync(NULL);
-			aptCloseSession();
-			rebootCounter--;
-		}
-
 
 		gspWaitForVBlank();
 	}
