@@ -231,7 +231,7 @@ int main()
 	//set argv/argc
 	static u32 argbuffer[0x200];
 	argbuffer[0]=1;
-	strcpy((char*)&argbuffer[1], me->executablePath);
+	snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", me->executablePath);
 	setArgs(argbuffer, 0x200*4);
 
 	// Override return address to homebrew booting code
