@@ -163,6 +163,8 @@ bool updateMenu(menu_s* m)
 	touchPosition touch;
 	hidCstickRead(&cstick);
 	hidTouchRead(&touch);
+	
+	cstick.dy=(abs(cstick.dy)<5)?0:cstick.dy;
 
 	if(hidKeysDown()&KEY_DOWN)move++;
 	if(hidKeysDown()&KEY_UP)move--;
