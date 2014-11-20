@@ -2,7 +2,7 @@
 #include <math.h>
 #include "water.h"
 
-void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d,  float sf, u16 w)
+void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d,  float sf, u16 w, s16 offset)
 {
 	if(!we)return;
 
@@ -11,6 +11,7 @@ void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d,  float sf, u16 w)
 	we->dampFactor=d;
 	we->springFactor=sf;
 	we->width=w;
+	we->offset=offset;
 	we->controlPoints=calloc(n, sizeof(float));
 	we->controlPointSpeeds=calloc(n, sizeof(float));
 }
@@ -20,7 +21,7 @@ void copyWaterEffect(waterEffect_s* dst, waterEffect_s* src)
 {
 	if(!dst || !src)return;
 
-	initWaterEffect(dst, src->numControlPoints, src->neighborhoodSize, src->dampFactor, src->springFactor, src->width);
+	initWaterEffect(dst, src->numControlPoints, src->neighborhoodSize, src->dampFactor, src->springFactor, src->width, src->offset);
 	memcpy(dst->controlPoints, src->controlPoints, sizeof(float)*src->numControlPoints);
 	memcpy(dst->controlPointSpeeds, src->controlPointSpeeds, sizeof(float)*src->numControlPoints);
 }
@@ -59,19 +60,22 @@ float evaluateWater(waterEffect_s* we, u16 x)
 {
 	if(!we || x>=we->width)return 0.0f;
 
-	const float vx=((float)(x*we->numControlPoints))/we->width;
+	const float vx=((float)((x-we->offset)*we->numControlPoints))/we->width;
 	const int k=(int)vx;
 	const float f=vx-(float)k;
 
 	return we->controlPoints[k]*(1.0f-f)+we->controlPoints[k+1]*f;
 }
 
-void exciteWater(waterEffect_s* we, float v, u16 k)
+void exciteWater(waterEffect_s* we, float v, u16 k, bool absolute)
 {
 	if(!we || k>=we->numControlPoints)return;
 
-	we->controlPoints[k]=v;
-	we->controlPointSpeeds[k]=0.0f;
+	if(absolute)
+	{
+		we->controlPoints[k]=v;
+		we->controlPointSpeeds[k]=0.0f;
+	}else we->controlPoints[k]+=v;
 }
 
 void updateWaterEffect(waterEffect_s* we)

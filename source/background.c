@@ -7,11 +7,12 @@
 #include "logo_bin.h"
 #include "bubble_bin.h"
 
-#define BG_WATER_CONTROLPOINTS (80)
+#define BG_WATER_CONTROLPOINTS (100)
 #define BG_WATER_NEIGHBORHOODS (3)
 #define BG_WATER_DAMPFACTOR (0.7f)
-#define BG_WATER_SPRINGFACTOR (0.8f)
-#define BG_WATER_WIDTH (400)
+#define BG_WATER_SPRINGFACTOR (0.85f)
+#define BG_WATER_WIDTH (500)
+#define BG_WATER_OFFSET (0)
 
 static bubble_t bubbles[BUBBLE_COUNT];
 static waterEffect_s waterEffect;
@@ -27,7 +28,7 @@ void initBackground(void)
 		bubbles[i].fade = 15;
 	}
 
-	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_SPRINGFACTOR, BG_WATER_WIDTH);
+	initWaterEffect(&waterEffect, BG_WATER_CONTROLPOINTS, BG_WATER_NEIGHBORHOODS, BG_WATER_DAMPFACTOR, BG_WATER_SPRINGFACTOR, BG_WATER_WIDTH, BG_WATER_OFFSET);
 	backgroundCnt = 0;
 }
 
@@ -68,6 +69,11 @@ void drawBubbles(void)
 	}
 }
 
+float randomFloat()
+{
+	return (float)rand()/(float)(RAND_MAX);
+}
+
 void updateBackground(void)
 {
 	int i;
@@ -77,15 +83,19 @@ void updateBackground(void)
 		updateBubble(&bubbles[i]);
 	}
 
-	exciteWater(&waterEffect, sin(backgroundCnt*0.1f)*2.0f, 0);
+	exciteWater(&waterEffect, sin(backgroundCnt*0.1f)*2.0f, 0, true);
 
-	//TEMP TEST
-	if(hidKeysDown()&KEY_UP)exciteWater(&waterEffect, 1.0f, 0);
-	if(hidKeysDown()&KEY_DOWN)exciteWater(&waterEffect, 2.0f, 0);
-	if(hidKeysDown()&KEY_LEFT)exciteWater(&waterEffect, 5.0f, 0);
-	if(hidKeysDown()&KEY_RIGHT)exciteWater(&waterEffect, -10.0f, 0);
-	if(hidKeysDown()&KEY_R)exciteWater(&waterEffect, 20.0f, 0);
-	if(hidKeysDown()&KEY_L)exciteWater(&waterEffect, 50.0f, 0);
+	//TODO : improve
+	if((hidKeysDown()&KEY_UP) || hidKeysDown()&KEY_DOWN)
+	{
+		exciteWater(&waterEffect, 0.2f+randomFloat()*2.0f, rand()%BG_WATER_CONTROLPOINTS, false);
+	}else if((hidKeysDown()&KEY_LEFT) || hidKeysDown()&KEY_RIGHT)
+	{
+		float v=3.0f+randomFloat()*1.0f;
+		if(rand()%2)v=-v;
+		int l=rand()%BG_WATER_CONTROLPOINTS;
+		int i; for(i=0;i<5;i++)exciteWater(&waterEffect, v, l-2+i, false);
+	}
 
 	updateWaterEffect(&waterEffect);
 

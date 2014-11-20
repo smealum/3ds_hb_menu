@@ -25,7 +25,6 @@ int debugValues[100];
 void drawDebug()
 {
 	char str[256];
-	// sprintf(str, "hello3 %d %d %08X %08X\n", debugValues[0], debugValues[1], (unsigned int)debugValues[2], (unsigned int)debugValues[3]);
 	sprintf(str, "hello3 %d %d %d %d\n", debugValues[0], debugValues[1], debugValues[2], debugValues[3]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
 }
@@ -39,7 +38,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawStatusBar(wifiStatus, charging, batteryLevel);
 
 	// debug text
-	drawDebug();
+	// drawDebug();
 
 	//menu stuff
 	if(rebootCounter<257)
