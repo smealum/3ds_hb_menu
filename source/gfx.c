@@ -269,6 +269,22 @@ void gfxDrawRectangle(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColor[3], s16 
 	}
 }
 
+void gfxFadeScreen(gfxScreen_t screen, gfx3dSide_t side, u32 f)
+{
+	u16 fbWidth, fbHeight;
+	u8* fbAdr=gfxGetFramebuffer(screen, side, &fbWidth, &fbHeight);
+
+	int i; for(i=0; i<fbWidth*fbHeight/2; i++)
+	{
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+		*fbAdr=(*fbAdr*f)>>8;fbAdr++;
+	}
+}
+
 void gfxDrawWave(gfxScreen_t screen, gfx3dSide_t side, u8 rgbColorStart[3], u8 rgbColorEnd[3], u16 level, u16 amplitude, u16 width, gfxWaveCallback cb, void* p)
 {
 	u16 fbWidth, fbHeight;

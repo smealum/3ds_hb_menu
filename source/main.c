@@ -138,6 +138,8 @@ int main()
 
 	srand(svcGetSystemTick());
 
+	int rebootCounter=256;
+
 	while(aptMainLoop())
 	{
 		FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
@@ -167,11 +169,28 @@ int main()
 		if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);
 		else renderFrame(BGCOLOR, WATERBORDERCOLOR, WATERCOLOR);
 
+		debugValues[0]=rebootCounter;
+
+		if(rebootCounter<256)
+		{
+			if(rebootCounter<0)rebootCounter=0;
+			gfxFadeScreen(GFX_TOP, GFX_LEFT, rebootCounter);
+			gfxFadeScreen(GFX_BOTTOM, GFX_BOTTOM, rebootCounter);
+			if(rebootCounter>0)rebootCounter-=6;
+		}
+
 		gfxFlushBuffers();
 		gfxSwapBuffers();
 
-		//TEMP
-		if(hidKeysDown()&KEY_START)*(u32*)NULL=0xDEADBABE; // trigger crash to reboot console
+		if(hidKeysDown()&KEY_START)
+		{
+			//reboot
+			aptOpenSession();
+				APT_HardwareResetAsync(NULL);
+			aptCloseSession();
+			rebootCounter--;
+		}
+
 
 		gspWaitForVBlank();
 	}
