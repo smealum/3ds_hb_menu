@@ -8,7 +8,7 @@ The Homebrew Launcher (hbmenu for short) is the default menu for ninjhax, a 3DS 
 
 To use hbmenu as your ninjhax menu, simply rename the 3dsx executable to boot.3dsx and place it at the root of your SD card.
 
-Press START in hbmenu to reboot your console into home menu. Use the D-PAD or the touchscreen to select an application, and press A to start it.
+Press START in hbmenu to reboot your console into home menu. Use the D-PAD, CIRCLE-PAD or the touchscreen to select an application, and press A or touch it again to start it.
 
 hbmenu scans the sdmc:/3ds/ directory for applications; it will only find applications placed there and nowhere else on your SD card. Ideally, you should have a folder for each application, containing an executable and an icon (SMDH) file. The executable should either be named "boot.3dsx" or "\[folder name\].3dsx". The icon file can be named "icon.bin", "icon.smdh", "icon.icn", "\[folder name\].smdh" or "\[folder name\].icn". hbmenu will also recognize stray 3dsx executables located in the sdmc:/3ds/ directory.
 
