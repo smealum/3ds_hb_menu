@@ -15,17 +15,17 @@ hbmenu scans the sdmc:/3ds/ directory for applications; it will only find applic
 Here is an example (correct) directory structure that hbmenu will have no trouble recognizing :
 
 - sdmc:/
-  - /3ds/
-    - /3dscraft/
+  - 3ds/
+    - 3dscraft/
       - 3dscraft.3dsx
       - icon.bin
-    - /blargsnes/
+    - blargsnes/
       - boot.3dsx
       - blargsnes.smdh
-    - /gameyob/
+    - gameyob/
       - gameyob.3dsx
       - gameyob.icn
-    - /cubedemo/
+    - cubedemo/
       - boot.3dsx
       - icon.icn
     - 3dnes.3dsx
