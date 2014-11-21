@@ -121,8 +121,8 @@ void clearMenuEntries(menu_s* m)
 	while(me)
 	{
 		temp=me->next;
-		free(me);
 		me->next = NULL;
+		free(me);
 		me = temp;
 	}
 
