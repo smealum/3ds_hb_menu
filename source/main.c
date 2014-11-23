@@ -10,6 +10,7 @@
 #include "filesystem.h"
 #include "error.h"
 #include "hb.h"
+#include "netloader.h"
 
 bool brewMode = false;
 u32 sdmcCurrent = 0;
@@ -64,6 +65,18 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 			"    Something unexpected happened when trying to mount your SD card.\n"
 			"    Try taking it out and putting it back in. If that doesn't work,\n"
 			"please try again with another SD card.");
+	}else if(netloader_active){
+		char bof[256];
+		u32 ip = gethostid();
+		sprintf(bof,
+			"    NetLoader Active\n"
+			"    IP: %lu.%lu.%lu.%lu, Port: %d\n"
+			"                                                                                            B : Cancel\n",
+			ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF, NETLOADER_PORT);
+
+		drawError(GFX_BOTTOM,
+			"NetLoader",
+			bof);
 	}else{
 		//got SD
 		drawMenu(&menu);
@@ -131,6 +144,7 @@ int main()
 	acInit();
 	ptmInit();
 	initHb();
+	netloader_init();
 
 	initBackground();
 	initErrors();
@@ -151,7 +165,7 @@ int main()
 	while(aptMainLoop())
 	{
 		FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
-		
+
 		if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
 		{
 			closeSDArchive();
@@ -163,7 +177,7 @@ int main()
 			clearMenuEntries(&menu);
 		}
 		sdmcPrevious = sdmcCurrent;
-			
+
 		ACU_GetWifiStatus(NULL, &wifiStatus);
 		PTMU_GetBatteryLevel(NULL, &batteryLevel);
 		PTMU_GetBatteryChargeState(NULL, &charging);
@@ -171,8 +185,16 @@ int main()
 
 		updateBackground();
 
-		if(rebootCounter==256)
+		if(netloader_active)
 		{
+			if(hidKeysDown()&KEY_B){
+				netloader_deactivate();
+				netloader_active = false;
+			}else if(netloader_loop()){
+				netloader_boot=true;
+				break;
+			}
+		}else if(rebootCounter==256){
 			if(hidKeysDown()&KEY_A)
 			{
 				//reboot
@@ -186,6 +208,11 @@ int main()
 			}
 		}else if(rebootCounter==257){
 			if(hidKeysDown()&KEY_START)rebootCounter--;
+			if(hidKeysDown()&KEY_Y)
+			{
+				netloader_activate();
+				netloader_active = true;
+			}
 			if(secretCode())brewMode = true;
 			else if(updateMenu(&menu))break;
 		}
@@ -211,6 +238,7 @@ int main()
 	HB_GetBootloaderAddresses((void**)&callBootloader, (void**)&setArgs);
 
 	// cleanup whatever we have to cleanup
+	netloader_exit();
 	exitHb();
 	ptmExit();
 	acExit();
@@ -225,13 +253,21 @@ int main()
 	//open file that we're going to boot up
 	fsInit();
 	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry);
-	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &hbHandle, sdmcArchive, FS_makePath(PATH_CHAR, me->executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	char* executablePath;
+	if(netloader_boot)
+	{
+		executablePath = NETLOADER_TMPFILE;
+	}else{
+		executablePath = me->executablePath;
+	}
+
+	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &hbHandle, sdmcArchive, FS_makePath(PATH_CHAR, executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	fsExit();
 
 	//set argv/argc
 	static u32 argbuffer[0x200];
 	argbuffer[0]=1;
-	snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", me->executablePath);
+	snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
 	setArgs(argbuffer, 0x200*4);
 
 	// Override return address to homebrew booting code
