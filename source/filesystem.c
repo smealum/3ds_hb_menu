@@ -137,24 +137,25 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
 	
 	static char fullPath[1024];
-	u32 entriesRead=0;
+	u32 entriesRead;
 	do
 	{
 		static FS_dirent entry;
 		memset(&entry,0,sizeof(FS_dirent));
+		entriesRead=0;
 		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
-		if(entriesRead && entry.isDirectory) //directories
+		if(entriesRead)
 		{
 			strncpy(fullPath, path, 1024);
 			int n=strlen(fullPath);
 			unicodeToChar(&fullPath[n], entry.name, 1024-n);
-			addDirectoryToMenu(m, fullPath);
-		}else{ //stray executables
-			strncpy(fullPath, path, 1024);
-			int n=strlen(fullPath);
-			unicodeToChar(&fullPath[n], entry.name, 1024-n);
-			n=strlen(fullPath);
-			if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addFileToMenu(m, fullPath);
+			if(entry.isDirectory) //directories
+			{
+				addDirectoryToMenu(m, fullPath);
+			}else{ //stray executables
+				n=strlen(fullPath);
+				if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addFileToMenu(m, fullPath);
+			}
 		}
 	}while(entriesRead);
 
