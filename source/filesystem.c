@@ -143,7 +143,8 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 		static FS_dirent entry;
 		memset(&entry,0,sizeof(FS_dirent));
 		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
-		if(entriesRead && entry.isDirectory) //directories
+		if(!entriesRead)break; //reached end of directory
+		if(entry.isDirectory) //directories
 		{
 			strncpy(fullPath, path, 1024);
 			int n=strlen(fullPath);
