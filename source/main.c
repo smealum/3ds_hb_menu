@@ -158,7 +158,7 @@ int main()
 		scanHomebrewDirectory(&menu, "/3ds/");
 	}
 	sdmcPrevious = sdmcCurrent;
-	nextSdCheck = osGetTime()+5000;
+	nextSdCheck = osGetTime()+250;
 
 	srand(svcGetSystemTick());
 
@@ -166,7 +166,8 @@ int main()
 
 	while(aptMainLoop())
 	{
-		if (nextSdCheck < osGetTime()) {
+		if (nextSdCheck < osGetTime())
+		{
 			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 
 			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
@@ -180,7 +181,7 @@ int main()
 				clearMenuEntries(&menu);
 			}
 			sdmcPrevious = sdmcCurrent;
-			nextSdCheck = osGetTime()+5000;
+			nextSdCheck = osGetTime()+250;
 		}
 
 		ACU_GetWifiStatus(NULL, &wifiStatus);
