@@ -14,6 +14,7 @@
 
 bool brewMode = false;
 u32 sdmcCurrent = 0;
+u64 nextSdCheck = 0;
 
 menu_s menu;
 u32 wifiStatus = 0;
@@ -157,6 +158,7 @@ int main()
 		scanHomebrewDirectory(&menu, "/3ds/");
 	}
 	sdmcPrevious = sdmcCurrent;
+	nextSdCheck = osGetTime()+250;
 
 	srand(svcGetSystemTick());
 
@@ -164,19 +166,23 @@ int main()
 
 	while(aptMainLoop())
 	{
-		FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+		if (nextSdCheck < osGetTime())
+		{
+			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 
-		if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
-		{
-			closeSDArchive();
-			openSDArchive();
-			scanHomebrewDirectory(&menu, "/3ds/");
+			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
+			{
+				closeSDArchive();
+				openSDArchive();
+				scanHomebrewDirectory(&menu, "/3ds/");
+			}
+			else if(sdmcCurrent < 1 && sdmcPrevious == 1)
+			{
+				clearMenuEntries(&menu);
+			}
+			sdmcPrevious = sdmcCurrent;
+			nextSdCheck = osGetTime()+250;
 		}
-		else if(sdmcCurrent < 1 && sdmcPrevious == 1)
-		{
-			clearMenuEntries(&menu);
-		}
-		sdmcPrevious = sdmcCurrent;
 
 		ACU_GetWifiStatus(NULL, &wifiStatus);
 		PTMU_GetBatteryLevel(NULL, &batteryLevel);
