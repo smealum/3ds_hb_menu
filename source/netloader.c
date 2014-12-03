@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <malloc.h>
+#include <string.h>
 
 #include "filesystem.h"
 #include "netloader.h"

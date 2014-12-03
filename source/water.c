@@ -1,5 +1,6 @@
 #include <string.h>
 #include <math.h>
+#include <malloc.h>
 #include "water.h"
 
 void initWaterEffect(waterEffect_s* we, u16 n, u16 s, float d,  float sf, u16 w, s16 offset)

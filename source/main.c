@@ -13,7 +13,7 @@
 #include "netloader.h"
 
 bool brewMode = false;
-u32 sdmcCurrent = 0;
+u8 sdmcCurrent = 0;
 u64 nextSdCheck = 0;
 
 menu_s menu;
@@ -151,7 +151,7 @@ int main()
 	initErrors();
 	initMenu(&menu);
 
-	u32 sdmcPrevious = 0;
+	u8 sdmcPrevious = 0;
 	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 	if(sdmcCurrent == 1)
 	{
