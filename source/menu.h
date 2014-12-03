@@ -21,6 +21,12 @@
 #define fptToInt(v) ((v)>>10)
 #define intToFpt(v) ((v)<<10)
 
+typedef enum menuEntryType_s
+{
+	MENU_ENTRY_FILE,
+	MENU_ENTRY_FOLDER,
+}menuEntryType_s;
+
 typedef struct menuEntry_s
 {
 	char executablePath[ENTRY_PATHLENGTH+1];
@@ -28,6 +34,7 @@ typedef struct menuEntry_s
 	char description[ENTRY_DESCLENGTH+1];
 	char author[ENTRY_AUTHORLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
+	menuEntryType_s type;
 	struct menuEntry_s* next;
 }menuEntry_s;
 
@@ -53,11 +60,12 @@ void drawMenu(menu_s* m);
 bool updateMenu(menu_s* m);
 void addMenuEntry(menu_s* m, menuEntry_s* me);
 void addMenuEntryCopy(menu_s* m, menuEntry_s* me);
+void sortMenu(menu_s* m);
 void clearMenuEntries(menu_s* m);
-void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData);
+void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type);
 menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 
 //menu entry stuff
 void initEmptyMenuEntry(menuEntry_s* me);
-void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData);
+void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type);
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);

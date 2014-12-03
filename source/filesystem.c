@@ -8,6 +8,8 @@
 #include "smdh.h"
 #include "utils.h"
 
+static char cwd[1024] = "/3ds/";
+
 FS_archive sdmcArchive;
 
 void initFilesystem(void)
@@ -56,6 +58,31 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	return ret;
 }
 
+static void loadSmdh(menuEntry_s* entry, const char* path)
+{
+	static char smdhPath[1024];
+	char *p;
+
+	/* TODO: prefer to load embedded SMDH */
+	memset(smdhPath, 0, sizeof(smdhPath));
+	strncpy(smdhPath, path, sizeof(smdhPath));
+
+	for(p = smdhPath + sizeof(smdhPath)-1; p > smdhPath; --p) {
+		if(*p == '.') {
+			/* this should always be true */
+			if(strcmp(p, ".3dsx") == 0) {
+				static smdh_s smdh;
+				strcpy(p, ".smdh");
+				if(fileExists(smdhPath, &sdmcArchive)) {
+					if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) {
+						extractSmdhData(&smdh, entry->name, entry->description, entry->author, entry->iconData);
+					}
+				}
+			}
+		}
+	}
+}
+
 bool fileExists(char* path, FS_archive* archive)
 {
 	if(!path || !archive)return false;
@@ -84,7 +111,9 @@ void addFileToMenu(menu_s* m, char* execPath)
 
 	int i, l=-1; for(i=0; execPath[i]; i++) if(execPath[i]=='/')l=i;
 
-	initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
+	initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin, MENU_ENTRY_FILE);
+
+	loadSmdh(&tmpEntry, execPath);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }
@@ -94,46 +123,18 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	if(!m || !path)return;
 
 	static menuEntry_s tmpEntry;
-	static smdh_s tmpSmdh;
-	static char execPath[128];
-	static char iconPath[128];
 
 	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/')l=i;
 
-	snprintf(execPath, 128, "%s/boot.3dsx", path);
-	if(!fileExists(execPath, &sdmcArchive))
-	{
-		snprintf(execPath, 128, "%s/%s.3dsx", path, &path[l+1]);
-		if(!fileExists(execPath, &sdmcArchive))return;
-	}
-
-	bool icon=false;
-	snprintf(iconPath, 128, "%s/icon.bin", path);
-	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/icon.smdh", path);
-	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/icon.icn", path);
-	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/%s.smdh", path, &path[l+1]);
-	if(!icon && !(icon=fileExists(iconPath, &sdmcArchive)))snprintf(iconPath, 128, "%s/%s.icn", path, &path[l+1]);
-
-	int ret=loadFile(iconPath, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
-	
-	if(!ret)
-	{
-		initEmptyMenuEntry(&tmpEntry);
-		ret=extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.author, tmpEntry.iconData);
-		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
-	}
-
-	if(ret)initMenuEntry(&tmpEntry, execPath, &path[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
+	initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)installerIcon_bin, MENU_ENTRY_FOLDER);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }
 
-void scanHomebrewDirectory(menu_s* m, char* path)
+void scanHomebrewDirectory(menu_s* m)
 {
-	if(!path)return;
-
 	Handle dirHandle;
-	FS_path dirPath=FS_makePath(PATH_CHAR, path);
+	FS_path dirPath=FS_makePath(PATH_CHAR, cwd);
 	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
 	
 	static char fullPath[1024];
@@ -146,7 +147,7 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
 		if(entriesRead)
 		{
-			strncpy(fullPath, path, 1024);
+			strncpy(fullPath, cwd, 1024);
 			int n=strlen(fullPath);
 			unicodeToChar(&fullPath[n], entry.name, 1024-n);
 			if(entry.isDirectory) //directories
@@ -160,4 +161,23 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 	}while(entriesRead);
 
 	FSDIR_Close(dirHandle);
+
+	sortMenu(m);
+}
+
+void changeDirectory(const char* path)
+{
+	if(strcmp(path, "..") == 0) {
+		char *p = cwd + strlen(cwd)-2;
+		while(p > cwd && *p != '/') *p-- = 0;
+	}
+	else {
+		strncpy(cwd, path, sizeof(cwd));
+		strcat(cwd, "/");
+	}
+}
+
+void printDirectory(void)
+{
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, cwd, 10, 10);
 }

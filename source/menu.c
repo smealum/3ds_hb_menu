@@ -66,13 +66,8 @@ void drawMenu(menu_s* m)
 	if(!m->numEntries)
 	{
 		drawError(GFX_BOTTOM,
-			"Error",
-			"    It seems you don't have any homebrew applications installed on your\n"
-			"SD card.\n"
-			"    Please take out your SD card, create a folder named \"3ds\" at the root of\n"
-			"your card and place homebrew there.\n"
-			"    Then, simply insert your SD card back into your 3DS !\n"
-			"    The homebrew launcher will take it from there.");
+			"Empty",
+			"    No applications or folders found here.");
 	}else{
 		menuEntry_s* me=m->entries;
 		int i=0;
@@ -130,14 +125,14 @@ void clearMenuEntries(menu_s* m)
 	m->entries = NULL;
 }
 
-void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData)
+void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type)
 {
 	if(!m || !name || !description || !iconData)return;
 
 	menuEntry_s* me=malloc(sizeof(menuEntry_s));
 	if(!me)return;
 
-	initMenuEntry(me, execPath, name, description, author, iconData);
+	initMenuEntry(me, execPath, name, description, author, iconData, type);
 	
 	addMenuEntry(m, me);
 }
@@ -268,7 +263,7 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->next=NULL;
 }
 
-void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData)
+void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type)
 {
 	if(!me)return;
 
@@ -279,6 +274,7 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
 	strncpy(me->author, author, ENTRY_AUTHORLENGTH);
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
+	me->type = type;
 }
 
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
@@ -333,4 +329,42 @@ int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool select
 	gfxDrawTextN(screen, GFX_LEFT, &fontDescription, me->author, ENTRY_AUTHORLENGTH, x+4, y+ENTRY_HEIGHT-getStringLength(&fontDescription, me->author)-10);
 
 	return totalWidth;
+}
+
+static int menuEntryCmp(const void *p1, const void *p2)
+{
+	const menuEntry_s* lhs = *(menuEntry_s**)p1;
+	const menuEntry_s* rhs = *(menuEntry_s**)p2;
+
+	if(lhs->type == rhs->type)
+		return strcasecmp(lhs->name, rhs->name);
+	if(lhs->type == MENU_ENTRY_FOLDER)
+		return -1;
+	return 1;
+}
+
+void sortMenu(menu_s* m)
+{
+	u16 i;
+	if(m->numEntries == 0) return;
+
+	menuEntry_s** list = (menuEntry_s**)calloc(m->numEntries, sizeof(menuEntry_s*));
+	if(list == NULL) return;
+
+	menuEntry_s* p = m->entries;
+	for(i = 0; i < m->numEntries; ++i) {
+		list[i] = p;
+		p = p->next;
+	}
+
+	qsort(list, m->numEntries, sizeof(menuEntry_s*), menuEntryCmp);
+
+	menuEntry_s** pp = &m->entries;
+	for(i = 0; i < m->numEntries; ++i) {
+		*pp = list[i];
+		pp = &(*pp)->next;
+	}
+	*pp = NULL;
+
+	free(list);
 }

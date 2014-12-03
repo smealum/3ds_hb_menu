@@ -39,6 +39,9 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	// status bar
 	drawStatusBar(wifiStatus, charging, batteryLevel);
 
+	// current directory
+	printDirectory();
+
 	// debug text
 	// drawDebug();
 
@@ -155,7 +158,7 @@ int main()
 	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 	if(sdmcCurrent == 1)
 	{
-		scanHomebrewDirectory(&menu, "/3ds/");
+		scanHomebrewDirectory(&menu);
 	}
 	sdmcPrevious = sdmcCurrent;
 	nextSdCheck = osGetTime()+250;
@@ -174,7 +177,7 @@ int main()
 			{
 				closeSDArchive();
 				openSDArchive();
-				scanHomebrewDirectory(&menu, "/3ds/");
+				scanHomebrewDirectory(&menu);
 			}
 			else if(sdmcCurrent < 1 && sdmcPrevious == 1)
 			{
@@ -220,7 +223,23 @@ int main()
 				netloader_active = true;
 			}
 			if(secretCode())brewMode = true;
-			else if(updateMenu(&menu))break;
+			else if(hidKeysDown()&KEY_B) {
+					changeDirectory("..");
+					clearMenuEntries(&menu);
+					initMenu(&menu);
+					scanHomebrewDirectory(&menu);
+			}
+			else if(updateMenu(&menu)) {
+				menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry);
+				if(me->type == MENU_ENTRY_FOLDER) {
+					changeDirectory(me->executablePath);
+					clearMenuEntries(&menu);
+					initMenu(&menu);
+					scanHomebrewDirectory(&menu);
+				}
+				else
+					break;
+			}
 		}
 
 		if(brewMode)renderFrame(BGCOLOR, BEERBORDERCOLOR, BEERCOLOR);

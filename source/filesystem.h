@@ -17,4 +17,6 @@ bool fileExists(char* path, FS_archive* archive);
 
 //menu fs stuff
 void addDirectoryToMenu(menu_s* m, char* path);
-void scanHomebrewDirectory(menu_s* m, char* path);
+void scanHomebrewDirectory(menu_s* m);
+void changeDirectory(const char* path);
+void printDirectory(void);
