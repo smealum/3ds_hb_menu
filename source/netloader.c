@@ -133,6 +133,18 @@ int netloader_loop(void) {
 		{
 			closesocket(netloader_listenfd);
 			netloader_listenfd = -1;
+			int flags = fcntl(netloader_datafd, F_GETFL);
+			if(flags == -1)
+			{
+				netloader_socket_error("fcntl", SOC_GetErrno());
+				return -1;
+			}
+			int rc = fcntl(netloader_datafd, F_SETFL, flags & ~O_NONBLOCK);
+			if(rc != 0)
+			{
+				netloader_socket_error("fcntl", SOC_GetErrno());
+				return -1;
+			}
 		}
 	}
 
@@ -160,19 +172,12 @@ int netloader_loop(void) {
 		ssize_t rc;
 		do
 		{
-recv_more:
 			rc = recv(netloader_datafd, dataBuffer, DATA_BUFFER_SIZE, 0);
 			if(rc < 0)
 			{
-				int err = SOC_GetErrno();
-				if(err == -EWOULDBLOCK || err == EWOULDBLOCK)
-					goto recv_more;
-				else
-				{
-					netloader_socket_error("recv", err);
-					FSFILE_Close(fileHandle);
-					return -1;
-				}
+				netloader_socket_error("recv", SOC_GetErrno());
+				FSFILE_Close(fileHandle);
+				return -1;
 			}
 
 			u32    bytes;
