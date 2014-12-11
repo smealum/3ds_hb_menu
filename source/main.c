@@ -22,6 +22,14 @@ u8 batteryLevel = 5;
 u8 charging = 0;
 int rebootCounter;
 
+static enum
+{
+	NETLOADER_INACTIVE,
+	NETLOADER_ACTIVE,
+	NETLOADER_ERROR,
+} netloader_state = NETLOADER_INACTIVE;
+static bool netloader_boot = false;
+
 int debugValues[100];
 
 void drawDebug()
@@ -66,7 +74,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 			"    Something unexpected happened when trying to mount your SD card.\n"
 			"    Try taking it out and putting it back in. If that doesn't work,\n"
 			"please try again with another SD card.");
-	}else if(netloader_active){
+	}else if(netloader_state == NETLOADER_ACTIVE){
 		char bof[256];
 		u32 ip = gethostid();
 		sprintf(bof,
@@ -78,6 +86,8 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 		drawError(GFX_BOTTOM,
 			"NetLoader",
 			bof);
+	}else if(netloader_state == NETLOADER_ERROR){
+		netloader_draw_error();
 	}else{
 		//got SD
 		drawMenu(&menu);
@@ -191,15 +201,23 @@ int main()
 
 		updateBackground();
 
-		if(netloader_active)
-		{
+		if(netloader_state == NETLOADER_ACTIVE){
 			if(hidKeysDown()&KEY_B){
 				netloader_deactivate();
-				netloader_active = false;
-			}else if(netloader_loop()){
-				netloader_boot=true;
-				break;
+				netloader_state = NETLOADER_INACTIVE;
+			}else{
+				int rc = netloader_loop();
+				if(rc > 0)
+				{
+					netloader_boot = true;
+					break;
+				}else if(rc < 0){
+					netloader_state = NETLOADER_ERROR;
+				}
 			}
+		}else if(netloader_state == NETLOADER_ERROR){
+			if(hidKeysDown()&KEY_B)
+				netloader_state = NETLOADER_INACTIVE;
 		}else if(rebootCounter==256){
 			if(hidKeysDown()&KEY_A)
 			{
@@ -216,8 +234,8 @@ int main()
 			if(hidKeysDown()&KEY_START)rebootCounter--;
 			if(hidKeysDown()&KEY_Y)
 			{
-				netloader_activate();
-				netloader_active = true;
+				if(netloader_activate() == 0)
+					netloader_state = NETLOADER_ACTIVE;
 			}
 			if(secretCode())brewMode = true;
 			else if(updateMenu(&menu))break;
