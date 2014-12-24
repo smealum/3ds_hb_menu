@@ -9,7 +9,6 @@
 #include "statusbar.h"
 #include "filesystem.h"
 #include "error.h"
-#include "hb.h"
 #include "netloader.h"
 
 bool brewMode = false;
