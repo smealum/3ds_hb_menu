@@ -153,7 +153,7 @@ int main()
 	irrstInit(NULL);
 	acInit();
 	ptmInit();
-	initHb();
+	hbInit();
 	netloader_init();
 
 	initBackground();
@@ -262,7 +262,7 @@ int main()
 
 	// cleanup whatever we have to cleanup
 	netloader_exit();
-	exitHb();
+	hbExit();
 	ptmExit();
 	acExit();
 	irrstExit();
