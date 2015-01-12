@@ -146,7 +146,7 @@ int main()
 {
 	srvInit();
 	aptInit();
-	gfxInit();
+	gfxInitDefault();
 	initFilesystem();
 	openSDArchive();
 	hidInit(NULL);
