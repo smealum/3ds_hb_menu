@@ -3,12 +3,9 @@
 #define NETLOADER_TMPFILE "/netloader.3dsx"
 #define NETLOADER_PORT 9000
 
-extern bool netloader_active;
-extern bool netloader_boot;
-
-void netloader_activate();
-void netloader_deactivate();
-void netloader_init();
-int netloader_loop();
-void netloader_exit();
-
+int netloader_activate(void);
+int netloader_deactivate(void);
+int netloader_init(void);
+int netloader_loop(void);
+int netloader_exit(void);
+int netloader_draw_error(void);
