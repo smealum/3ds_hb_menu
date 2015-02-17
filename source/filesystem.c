@@ -3,6 +3,7 @@
 #include <3ds.h>
 
 #include "installerIcon_bin.h"
+#include "folderIcon_bin.h"
 
 #include "filesystem.h"
 #include "smdh.h"
@@ -126,7 +127,7 @@ void addDirectoryToMenu(menu_s* m, char* path)
 
 	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/')l=i;
 
-	initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)installerIcon_bin, MENU_ENTRY_FOLDER);
+	initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)folderIcon_bin, MENU_ENTRY_FOLDER);
 
 	addMenuEntryCopy(m, &tmpEntry);
 }
