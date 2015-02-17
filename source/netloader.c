@@ -58,7 +58,7 @@ int netloader_activate(void) {
 	netloader_listenfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(netloader_listenfd < 0)
 	{
-		netloader_socket_error("socket", SOC_GetErrno());
+		netloader_socket_error("socket", errno );
 		return -1;
 	}
 
@@ -71,27 +71,27 @@ int netloader_activate(void) {
 	int rc = bind(netloader_listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	if(rc != 0)
 	{
-		netloader_socket_error("bind", SOC_GetErrno());
+		netloader_socket_error("bind", errno);
 		return -1;
 	}
 
 	int flags = fcntl(netloader_listenfd, F_GETFL);
 	if(flags == -1)
 	{
-		netloader_socket_error("fcntl", SOC_GetErrno());
+		netloader_socket_error("fcntl", errno);
 		return -1;
 	}
 	rc = fcntl(netloader_listenfd, F_SETFL, flags | O_NONBLOCK);
 	if(rc != 0)
 	{
-		netloader_socket_error("fcntl", SOC_GetErrno());
+		netloader_socket_error("fcntl", errno);
 		return -1;
 	}
 
 	rc = listen(netloader_listenfd, 10);
         if(rc != 0)
 	{
-		netloader_socket_error("listen", SOC_GetErrno());
+		netloader_socket_error("listen", errno);
 		return -1;
 	}
 
@@ -122,10 +122,9 @@ int netloader_loop(void) {
 		netloader_datafd = accept(netloader_listenfd, (struct sockaddr*)NULL, NULL);
 		if(netloader_datafd < 0)
 		{
-			int err = SOC_GetErrno();
-			if(err != -EWOULDBLOCK && err != EWOULDBLOCK)
+			if(errno != -EWOULDBLOCK && errno != EWOULDBLOCK)
 			{
-				netloader_socket_error("accept", err);
+				netloader_socket_error("accept", errno);
 				return -1;
 			}
 		}
@@ -136,13 +135,13 @@ int netloader_loop(void) {
 			int flags = fcntl(netloader_datafd, F_GETFL);
 			if(flags == -1)
 			{
-				netloader_socket_error("fcntl", SOC_GetErrno());
+				netloader_socket_error("fcntl", errno);
 				return -1;
 			}
 			int rc = fcntl(netloader_datafd, F_SETFL, flags & ~O_NONBLOCK);
 			if(rc != 0)
 			{
-				netloader_socket_error("fcntl", SOC_GetErrno());
+				netloader_socket_error("fcntl", errno);
 				return -1;
 			}
 		}
@@ -175,7 +174,7 @@ int netloader_loop(void) {
 			rc = recv(netloader_datafd, dataBuffer, DATA_BUFFER_SIZE, 0);
 			if(rc < 0)
 			{
-				netloader_socket_error("recv", SOC_GetErrno());
+				netloader_socket_error("recv", errno);
 				FSFILE_Close(fileHandle);
 				return -1;
 			}
