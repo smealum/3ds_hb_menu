@@ -290,7 +290,22 @@ int main()
 	//set argv/argc
 	static u32 argbuffer[0x200];
 	argbuffer[0]=1;
-	snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
+	if(netloader_boot) {
+		char *ptr = netloaded_commandline;
+		char *dst = (char*)&argbuffer[1];
+		while (ptr < netloaded_commandline + netloaded_cmdlen) {
+			char *arg = ptr;
+			strcpy(dst,ptr);
+			ptr += strlen(arg) + 1;
+			dst += strlen(arg) + 1;
+			argbuffer[0]++;
+		}
+	}
+	else
+	{
+		snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
+	}
+
 	setArgs(argbuffer, 0x200*4);
 
 	// Override return address to homebrew booting code
