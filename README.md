@@ -55,6 +55,7 @@ setting the current working directory if you already have data files in a partic
 
 3dslink uses zlib for compression so you'll need to compile and install zlib for 3DS. You can do this from a bash shell (use the devkitPro provided msys bash on windows)
 
+`
 export PORTLIBS        := $(DEVKITPRO)/portlibs/armv6k
 export PATH            := $(DEVKITARM)/bin:$(PATH)
 export PKG_CONFIG_PATH := $(PORTLIBS)/lib/pkgconfig
@@ -64,8 +65,9 @@ export LDFLAGS         := -L$(PORTLIBS)/lib
 
 CHOST=arm-none-eabi ./configure --static --prefix=$(PORTLIBS)
 make && make install
+`
 
-Binaries of 3ds_hb_menu can be downloaded  from <a href"http://wintermute.github.io/3ds_hb_menu.zip">3ds_hb_menu.zip</a>
+Binaries of 3ds_hb_menu can be downloaded from http://wintermute.github.io/3ds_hb_menu.zip
 
 #### Contributing
 
