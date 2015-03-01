@@ -1,7 +1,8 @@
 #pragma once
 
-#define NETLOADER_TMPFILE "/netloader.3dsx"
-#define NETLOADER_PORT 9000
+#define NETLOADER_PORT 17491
+
+extern char *netloadedPath;
 
 int netloader_activate(void);
 int netloader_deactivate(void);

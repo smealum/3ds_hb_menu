@@ -279,7 +279,7 @@ int main()
 	char* executablePath;
 	if(netloader_boot)
 	{
-		executablePath = NETLOADER_TMPFILE;
+		executablePath = netloadedPath;
 	}else{
 		executablePath = me->executablePath;
 	}
