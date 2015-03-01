@@ -13,6 +13,24 @@ static char cwd[1024] = "/3ds/";
 
 FS_archive sdmcArchive;
 
+// File header
+#define _3DSX_MAGIC 0x58534433 // '3DSX'
+typedef struct
+{
+	u32 magic;
+	u16 headerSize, relocHdrSize;
+	u32 formatVer;
+	u32 flags;
+
+	// Sizes of the code, rodata and data segments +
+	// size of the BSS section (uninitialized latter half of the data segment)
+	u32 codeSegSize, rodataSegSize, dataSegSize, bssSize;
+	// offset and size of smdh
+	u32 smdhOffset, smdhSize;
+	// offset to filesystem
+	u32 fsOffset;
+} _3DSX_Header;
+
 void initFilesystem(void)
 {
 	fsInit();
@@ -64,7 +82,6 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 	static char smdhPath[1024];
 	char *p;
 
-	/* TODO: prefer to load embedded SMDH */
 	memset(smdhPath, 0, sizeof(smdhPath));
 	strncpy(smdhPath, path, sizeof(smdhPath));
 
@@ -73,12 +90,39 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 			/* this should always be true */
 			if(strcmp(p, ".3dsx") == 0) {
 				static smdh_s smdh;
-				strcpy(p, ".smdh");
-				if(fileExists(smdhPath, &sdmcArchive)) {
-					if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) {
-						extractSmdhData(&smdh, entry->name, entry->description, entry->author, entry->iconData);
+
+				u32 bytesRead;
+				Result ret;
+				Handle fileHandle;
+				bool gotsmdh = false;
+
+				_3DSX_Header header;
+
+				// first check for embedded smdh
+				ret = FSUSER_OpenFile(NULL, &fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+				if (ret == 0)
+				{
+					ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, &header, sizeof(header));
+					if (ret == 0 && bytesRead == sizeof(header))
+					{
+						if (header.headerSize >= 44 )
+						{
+							ret=FSFILE_Read(fileHandle, &bytesRead, header.smdhOffset, &smdh, sizeof(smdh));
+							if (ret == 0 && bytesRead == sizeof(smdh)) gotsmdh = true;
+						}
+					}
+					FSFILE_Close(fileHandle);
+				}
+
+				if (!gotsmdh) {
+					strcpy(p, ".smdh");
+					if(fileExists(smdhPath, &sdmcArchive)) {
+						if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) gotsmdh = true;
 					}
 				}
+
+				if (gotsmdh) extractSmdhData(&smdh, entry->name, entry->description, entry->author, entry->iconData);
+
 			}
 		}
 	}
