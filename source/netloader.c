@@ -20,8 +20,6 @@ char *netloadedPath = NULL;
 char *netloaded_commandline = NULL;
 int netloaded_cmdlen = 0;
 
-#define DATA_BUFFER_SIZE (512*1024)
-static u8   dataBuffer[DATA_BUFFER_SIZE];
 static char errbuf[1024];
 
 static int netloader_listenfd = -1;
@@ -35,14 +33,23 @@ static void *SOC_buffer = NULL;
 unsigned char in[ZLIB_CHUNK];
 unsigned char out[ZLIB_CHUNK];
 
-static void netloader_file_error(const char *func, int err) {
-	siprintf(errbuf, "  %s: err=0x%08X", func, err);
-	netloader_deactivate();
-}
-
 static void netloader_socket_error(const char *func, int err) {
 	siprintf(errbuf, "  %s: err=%d", func, err);
 	netloader_deactivate();
+}
+
+static char progress[256];
+
+static int netloader_draw_progress(void) {
+	char info[1024];
+	sprintf(info, "Transferring: %s\n\n%s",netloadedPath,progress);
+	drawError(GFX_BOTTOM, "NetLoader", info);
+	gfxFlushBuffers();
+	gfxSwapBuffers();
+
+	gspWaitForVBlank();
+
+	return 0;
 }
 
 //---------------------------------------------------------------------------------
@@ -144,7 +151,8 @@ static int decompress(int sock, FILE *fh, size_t filesize) {
 		}
 
 		total += have;
-		//printf("\r%zu (%d%%)",total, (100 * total) / filesize);
+		sprintf(progress,"%zu (%d%%)",total, (100 * total) / filesize);
+		netloader_draw_progress();
 	} while (strm.avail_out == 0);
 
 	/* done when inflate() says it's done */
@@ -300,6 +308,8 @@ int load3DSX(int sock, u32 remote) {
 
 	int response = 0;
 
+	chdir("sdmc:/3ds/");
+
 	int fd = open(filename,O_CREAT|O_WRONLY,ACCESSPERMS);
 
 	if (fd < 0) {
@@ -313,6 +323,9 @@ int load3DSX(int sock, u32 remote) {
 
 	send(sock,(int *)&response,sizeof(response),0);
 	close(fd);
+
+	netloadedPath=getcwd(NULL,0);
+	strcat(netloadedPath,filename);
 
 	FILE *file = fopen(filename,"wb");
 	char *writebuffer=malloc(65536);
@@ -334,6 +347,7 @@ int load3DSX(int sock, u32 remote) {
 		}
 	}
 
+	free(netloadedPath);
 	free(writebuffer);
 	fclose(file);
 
@@ -341,7 +355,6 @@ int load3DSX(int sock, u32 remote) {
 		netloadedPath=getcwd(NULL,0);
 		strcat(netloadedPath,filename);
 		netloadedPath = strchr(netloadedPath,'/');
-		//printf("%s\n", netloadedPath);
 	}
 	return response;
 }
