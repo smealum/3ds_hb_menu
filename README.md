@@ -41,6 +41,32 @@ Currently, everything in hbmenu is rendered in software. The reason for that is 
 
 hbmenu uses some funky service commands to launch 3dsx files. If you're interested in launching 3dsx files from your own application, you should look here.
 
+#### Netloader
+
+The netloader has now been replaced with 3dslink. Press Y to activate as usual then run 3dslink <3dsxfile> if your network can cope with UDP broadcast messages.
+If 3dslink says 3DS not found then you can use -a <ip address> to tell it where to send the file.
+
+All the other arguments you give 3dslink will be passed as arguments to the launched 3dsx file. You can also specify argv[0] with -0 <argument> which is useful for
+setting the current working directory if you already have data files in a particular place i.e. 3dslink myfile.3dsx -0 sdmc:/3ds/mydata/
+
+3dslink is provided with devkitARM or you can download binaries from http://davejmurphy.com/3dslink/
+
+#### Building
+
+3dslink uses zlib for compression so you'll need to compile and install zlib for 3DS. You can do this from a bash shell (use the devkitPro provided msys bash on windows)
+
+export PORTLIBS        := $(DEVKITPRO)/portlibs/armv6k
+export PATH            := $(DEVKITARM)/bin:$(PATH)
+export PKG_CONFIG_PATH := $(PORTLIBS)/lib/pkgconfig
+export CFLAGS          := -march=armv6k -mtune=mpcore -mfloat-abi=hard -O3 -mword-relocations
+export CPPFLAGS        := -I$(PORTLIBS)/include
+export LDFLAGS         := -L$(PORTLIBS)/lib
+
+CHOST=arm-none-eabi ./configure --static --prefix=$(PORTLIBS)
+make && make install
+
+Binaries of 3ds_hb_menu can be downloaded  from <a href"http://wintermute.github.io/3ds_hb_menu.zip">3ds_hb_menu.zip</a>
+
 #### Contributing
 
 hbmenu is looking for contributors ! We're making this repository public so that you, the community, can make hbmenu into the menu of your dreams. Or show you how to make your own, better menu ! Of course we'd rather you improved hbmenu rather than went off and started fragmenting the userbase, but any contributions to the homebrew scene are welcome. Feel free to use code from hbmenu for your own projects, so long as you give credit to its original authors.
