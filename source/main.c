@@ -288,8 +288,8 @@ int main()
 	fsExit();
 
 	//set argv/argc
-	static u32 argbuffer[0x200];
-	argbuffer[0]=1;
+	static u32 argbuffer[0x400];
+	argbuffer[0]=0;
 	if(netloader_boot) {
 		char *ptr = netloaded_commandline;
 		char *dst = (char*)&argbuffer[1];
@@ -303,6 +303,7 @@ int main()
 	}
 	else
 	{
+		argbuffer[0]=1;
 		snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
 	}
 
