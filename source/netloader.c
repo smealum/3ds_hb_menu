@@ -18,6 +18,7 @@
 
 char *netloadedPath = NULL;
 char *netloaded_commandline = NULL;
+bool netloader_boot = false;
 int netloaded_cmdlen = 0;
 
 static char errbuf[1024];
@@ -177,6 +178,8 @@ int netloader_init(void) {
 	Result ret = SOC_Initialize(SOC_buffer, 0x100000);
 	if(ret != 0)
 	{
+		// need to free the shared memory block if something goes wrong
+		SOC_Shutdown();
 		free(SOC_buffer);
 		SOC_buffer = NULL;
 		return -1;

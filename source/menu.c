@@ -5,6 +5,9 @@
 #include "text.h"
 #include "menu.h"
 #include "error.h"
+#include "smdh.h"
+#include "regionfree.h"
+#include "regionfree_bin.h"
 
 u8 roundLut[]={8, 5, 4, 3, 2, 1, 1, 1, 0};
 u8 roundLut2[]={4, 3, 2, 1, 0};
@@ -13,6 +16,8 @@ u8 roundLut3[]={0, 1, 2};
 #define SCROLLING_SPEED (16) //lower is faster
 
 extern int debugValues[100]; //TEMP
+
+menuEntry_s regionfreeEntry;
 
 void initMenu(menu_s* m)
 {
@@ -27,6 +32,12 @@ void initMenu(menu_s* m)
 	m->scrollBarPos=0;
 	m->scrollTarget=0;
 	m->atEquilibrium=false;
+
+	if(regionFreeAvailable)
+	{
+		extractSmdhData((smdh_s*)regionfree_bin, regionfreeEntry.name, regionfreeEntry.description, regionfreeEntry.author, regionfreeEntry.iconData);
+		addMenuEntryCopy(m, &regionfreeEntry);
+	}
 }
 
 static inline s16 getEntryLocationPx(menu_s* m, int px)
@@ -87,8 +98,11 @@ void addMenuEntry(menu_s* m, menuEntry_s* me)
 {
 	if(!m || !me)return;
 
-	me->next=m->entries;
-	m->entries=me;
+	// add to the end of the list
+	menuEntry_s** l = &m->entries;
+	while(*l)l=&(*l)->next;
+	*l = me;
+	me->next = NULL;
 	m->numEntries++;
 }
 
@@ -123,6 +137,12 @@ void clearMenuEntries(menu_s* m)
 
 	m->numEntries = 0;
 	m->entries = NULL;
+
+	if(regionFreeAvailable)
+	{
+		// should always be available
+		addMenuEntryCopy(m, &regionfreeEntry);
+	}
 }
 
 void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type)
