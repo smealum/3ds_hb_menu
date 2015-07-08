@@ -34,11 +34,13 @@ typedef struct
 void initFilesystem(void)
 {
 	fsInit();
+	sdmcInit();
 }
 
 void exitFilesystem(void)
 {
 	fsExit();
+	sdmcExit();
 }
 
 void openSDArchive()
