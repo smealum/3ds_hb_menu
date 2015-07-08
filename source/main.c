@@ -10,6 +10,8 @@
 #include "filesystem.h"
 #include "error.h"
 #include "netloader.h"
+#include "regionfree.h"
+#include "boot.h"
 
 bool brewMode = false;
 u8 sdmcCurrent = 0;
@@ -152,6 +154,7 @@ int main()
 	irrstInit(NULL);
 	acInit();
 	ptmInit();
+	regionFreeInit();
 	netloader_init();
 
 	initBackground();
@@ -266,6 +269,10 @@ int main()
 	closeSDArchive();
 	aptExit();
 	srvExit();
+
+	if(menu.selectedEntry == 0 && regionFreeAvailable)return regionFreeRun();
+	
+	regionFreeExit();
 
 	return bootApp(netloader_boot ? netloadedPath : getMenuEntry(&menu, menu.selectedEntry)->executablePath);
 }

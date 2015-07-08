@@ -3,6 +3,6 @@
 
 #include <3ds.h>
 
-
+int bootApp(char* executablePath);
 
 #endif
