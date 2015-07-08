@@ -5,6 +5,7 @@
 extern char *netloadedPath;
 extern char *netloaded_commandline;
 extern int netloaded_cmdlen;
+extern bool netloader_boot;
 
 int netloader_activate(void);
 int netloader_deactivate(void);

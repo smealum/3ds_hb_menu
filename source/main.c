@@ -27,7 +27,6 @@ static enum
 	NETLOADER_ACTIVE,
 	NETLOADER_ERROR,
 } netloader_state = NETLOADER_INACTIVE;
-static bool netloader_boot = false;
 
 int debugValues[100];
 
@@ -93,17 +92,6 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	}
 }
 
-extern void (*__system_retAddr)(void);
-static Handle hbHandle;
-void (*callBootloader)(Handle hb, Handle file);
-void (*setArgs)(u32* src, u32 length);
-
-static void launchFile(void)
-{
-	//jump to bootloader
-	callBootloader(0x00000000, hbHandle);
-}
-
 bool secretCode(void)
 {
 	static const u32 secret_code[] =
@@ -142,6 +130,17 @@ bool secretCode(void)
 	return false;
 }
 
+// handled in main
+// doing it in main is preferred because execution ends in launching another 3dsx
+void __appInit()
+{
+}
+
+// same
+void __appExit()
+{
+}
+
 int main()
 {
 	srvInit();
@@ -153,7 +152,6 @@ int main()
 	irrstInit(NULL);
 	acInit();
 	ptmInit();
-	hbInit();
 	netloader_init();
 
 	initBackground();
@@ -257,12 +255,8 @@ int main()
 		gspWaitForVBlank();
 	}
 
-	//get bootloader addresses before exiting everything
-	HB_GetBootloaderAddresses((void**)&callBootloader, (void**)&setArgs);
-
 	// cleanup whatever we have to cleanup
 	netloader_exit();
-	hbExit();
 	ptmExit();
 	acExit();
 	irrstExit();
@@ -273,43 +267,5 @@ int main()
 	aptExit();
 	srvExit();
 
-	//open file that we're going to boot up
-	fsInit();
-	menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry);
-	char* executablePath;
-	if(netloader_boot)
-	{
-		executablePath = netloadedPath;
-	}else{
-		executablePath = me->executablePath;
-	}
-
-	debugValues[2]=FSUSER_OpenFileDirectly(NULL, &hbHandle, sdmcArchive, FS_makePath(PATH_CHAR, executablePath), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
-	fsExit();
-
-	//set argv/argc
-	static u32 argbuffer[0x400];
-	argbuffer[0]=0;
-	if(netloader_boot) {
-		char *ptr = netloaded_commandline;
-		char *dst = (char*)&argbuffer[1];
-		while (ptr < netloaded_commandline + netloaded_cmdlen) {
-			char *arg = ptr;
-			strcpy(dst,ptr);
-			ptr += strlen(arg) + 1;
-			dst += strlen(arg) + 1;
-			argbuffer[0]++;
-		}
-	}
-	else
-	{
-		argbuffer[0]=1;
-		snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
-	}
-
-	setArgs(argbuffer, 0x200*4);
-
-	// Override return address to homebrew booting code
-	__system_retAddr = launchFile;
-	return 0;
+	return bootApp(netloader_boot ? netloadedPath : getMenuEntry(&menu, menu.selectedEntry)->executablePath);
 }
