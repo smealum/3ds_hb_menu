@@ -1,6 +1,4 @@
-#ifndef REGIONFREE_H
-#define REGIONFREE_H
-
+#pragma once
 #include <3ds.h>
 
 extern bool regionFreeAvailable;
@@ -8,5 +6,3 @@ extern bool regionFreeAvailable;
 Result regionFreeInit();
 Result regionFreeExit();
 Result regionFreeRun();
-
-#endif

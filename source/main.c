@@ -139,22 +139,22 @@ bool secretCode(void)
 // doing it in main is preferred because execution ends in launching another 3dsx
 void __appInit()
 {
+	srvInit();
 }
 
 // same
 void __appExit()
 {
+	srvExit();
 }
 
 int main()
 {
-	srvInit();
 	aptInit();
 	gfxInitDefault();
 	initFilesystem();
 	openSDArchive();
 	hidInit(NULL);
-	irrstInit(NULL);
 	acInit();
 	ptmInit();
 	regionFreeInit();
@@ -281,17 +281,26 @@ int main()
 	netloader_exit();
 	ptmExit();
 	acExit();
-	irrstExit();
 	hidExit();
 	gfxExit();
 	exitFilesystem();
 	closeSDArchive();
 	aptExit();
-	srvExit();
 
-	if(menu.selectedEntry == 0 && regionFreeAvailable)return regionFreeRun();
-	
+	// check for netloader
+	if (netloader_boot)
+	{
+		regionFreeExit();
+		return bootApp(netloadedPath);
+	}
+
+	menuEntry_s* menuEntry = getMenuEntry(&menu, menu.selectedEntry);
+	if(regionFreeAvailable && menuEntry == &regionfreeEntry)
+	{
+		regionFreeRun();
+		return 0;
+	}
+
 	regionFreeExit();
-
-	return bootApp(netloader_boot ? netloadedPath : getMenuEntry(&menu, menu.selectedEntry)->executablePath);
+	return bootApp(menuEntry->executablePath);
 }

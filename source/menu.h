@@ -54,6 +54,8 @@ typedef struct
 	bool atEquilibrium;
 }menu_s;
 
+extern menuEntry_s regionfreeEntry;
+
 //menu stuff
 void initMenu(menu_s* m);
 void drawMenu(menu_s* m);
