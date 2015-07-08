@@ -13,11 +13,13 @@ FS_archive sdmcArchive;
 void initFilesystem(void)
 {
 	fsInit();
+	sdmcInit();
 }
 
 void exitFilesystem(void)
 {
 	fsExit();
+	sdmcExit();
 }
 
 void openSDArchive()
