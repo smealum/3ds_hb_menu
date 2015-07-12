@@ -35,7 +35,7 @@ int debugValues[100];
 void drawDebug()
 {
 	char str[256];
-	sprintf(str, "hello3 %d %d %d %d\n", debugValues[0], debugValues[1], debugValues[2], debugValues[3]);
+	sprintf(str, "hello3 %08X %d %d %d %d %d\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
 }
 
@@ -258,6 +258,9 @@ int main()
 		gspWaitForVBlank();
 	}
 
+	menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+	scanMenuEntry(me);
+
 	// cleanup whatever we have to cleanup
 	netloader_exit();
 	ptmExit();
@@ -270,9 +273,10 @@ int main()
 	aptExit();
 	srvExit();
 
-	if(menu.selectedEntry == 0 && regionFreeAvailable)return regionFreeRun();
+	if(!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable)return regionFreeRun();
 	
 	regionFreeExit();
 
-	return bootApp(netloader_boot ? netloadedPath : getMenuEntry(&menu, menu.selectedEntry)->executablePath);
+	if(netloader_boot)return bootApp(netloadedPath, NULL);
+	else return bootApp(me->executablePath, &me->metadata);
 }

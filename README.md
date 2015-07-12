@@ -79,3 +79,4 @@ hbmenu is looking for contributors ! We're making this repository public so that
 - mtheall : code
 - Fluto : graphics
 - Arkhandar : graphics
+- dotjasp : graphics (regionfree icon)

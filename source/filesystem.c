@@ -18,8 +18,8 @@ void initFilesystem(void)
 
 void exitFilesystem(void)
 {
-	fsExit();
 	sdmcExit();
+	fsExit();
 }
 
 void openSDArchive()

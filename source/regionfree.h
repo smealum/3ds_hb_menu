@@ -3,6 +3,8 @@
 
 #include <3ds.h>
 
+#define REGIONFREE_PATH "regionfree:/"
+
 extern bool regionFreeAvailable;
 
 Result regionFreeInit();

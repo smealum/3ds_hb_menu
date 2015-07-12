@@ -11,6 +11,7 @@ extern void (*__system_retAddr)(void);
 
 static Handle hbFileHandle;
 static u32 argbuffer[0x200];
+static u32 argbuffer_length = 0;
 
 // ninjhax 1.x
 void (*callBootloader_1x)(Handle hb, Handle file);
@@ -23,15 +24,27 @@ static void launchFile_1x(void)
 }
 
 // ninjhax 2.0+
+typedef struct
+{
+	int processId;
+	bool capabilities[2];
+	bool reserved[0xe];
+}processEntry_s;
+
 void (*callBootloader_2x)(Handle file, u32* argbuf, u32 arglength) = (void*)0x00100000;
+void (*callBootloaderNewProcess_2x)(int processId, u32* argbuf, u32 arglength) = (void*)0x00100008;
+void (*getBestProcess_2x)(u32 sectionSizes[3], bool requirements[2], processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
+
+int targetProcessId = -1;
 
 static void launchFile_2x(void)
 {
 	// jump to bootloader
-	callBootloader_2x(hbFileHandle, argbuffer, 0x200*4);
+	if(targetProcessId < 0)callBootloader_2x(hbFileHandle, argbuffer, argbuffer_length);
+	else callBootloaderNewProcess_2x(targetProcessId, argbuffer, argbuffer_length);
 }
 
-int bootApp(char* executablePath)
+int bootApp(char* executablePath, executableMetadata_s* em)
 {
 	// open file that we're going to boot up
 	fsInit();
@@ -39,7 +52,8 @@ int bootApp(char* executablePath)
 	fsExit();
 
 	// set argv/argc
-	argbuffer[0]=0;
+	argbuffer[0] = 0;
+	argbuffer_length = 0x200*4;
 	if(netloader_boot) {
 		char *ptr = netloaded_commandline;
 		char *dst = (char*)&argbuffer[1];
@@ -52,7 +66,8 @@ int bootApp(char* executablePath)
 		}
 	}else{
 		argbuffer[0]=1;
-		snprintf((char*)&argbuffer[1], 0x200*4, "sdmc:%s", executablePath);
+		snprintf((char*)&argbuffer[1], 0x200*4 - 4, "sdmc:%s", executablePath);
+		argbuffer_length = strlen((char*)&argbuffer[1]) + 4 + 1; // don't forget null terminator !
 	}
 
 	// figure out the preferred way of running the 3dsx
@@ -72,6 +87,18 @@ int bootApp(char* executablePath)
 		// ninjhax 2.0+
 		// override return address to homebrew booting code
 		__system_retAddr = launchFile_2x;
+
+		targetProcessId = -1;
+
+		if(em->scanned)
+		{
+			processEntry_s out[3];
+			int out_len = 0;
+			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, out, 3, &out_len);
+
+			// temp
+			targetProcessId = out[0].processId;
+		}
 	}
 
 	return 0;

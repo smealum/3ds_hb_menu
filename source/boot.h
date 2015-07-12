@@ -2,7 +2,8 @@
 #define BOOT_H
 
 #include <3ds.h>
+#include "scanner.h"
 
-int bootApp(char* executablePath);
+int bootApp(char* executablePath, executableMetadata_s* em);
 
 #endif

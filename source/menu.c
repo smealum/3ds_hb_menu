@@ -36,6 +36,7 @@ void initMenu(menu_s* m)
 	if(regionFreeAvailable)
 	{
 		extractSmdhData((smdh_s*)regionfree_bin, regionfreeEntry.name, regionfreeEntry.description, regionfreeEntry.author, regionfreeEntry.iconData);
+		strcpy(regionfreeEntry.executablePath, REGIONFREE_PATH);
 		addMenuEntryCopy(m, &regionfreeEntry);
 	}
 }
@@ -299,6 +300,8 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
 	strncpy(me->author, author, ENTRY_AUTHORLENGTH);
 	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
+
+	initMetadata(&me->metadata);
 }
 
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)

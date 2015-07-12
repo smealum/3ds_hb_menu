@@ -16,7 +16,7 @@ Result regionFreeInit()
 
 Result regionFreeExit()
 {
-	svcCloseHandle(nssHandle);
+	return svcCloseHandle(nssHandle);
 }
 
 Result NSS_Reboot(u32 pid_low, u32 pid_high, u8 mediatype, u8 flag)
