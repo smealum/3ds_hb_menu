@@ -27,13 +27,12 @@ static void launchFile_1x(void)
 typedef struct
 {
 	int processId;
-	bool capabilities[2];
-	bool reserved[0xe];
+	bool capabilities[0x10];
 }processEntry_s;
 
 void (*callBootloader_2x)(Handle file, u32* argbuf, u32 arglength) = (void*)0x00100000;
 void (*callBootloaderNewProcess_2x)(int processId, u32* argbuf, u32 arglength) = (void*)0x00100008;
-void (*getBestProcess_2x)(u32 sectionSizes[3], bool requirements[2], processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
+void (*getBestProcess_2x)(u32 sectionSizes[3], bool* requirements, int num_requirements, processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
 
 int targetProcessId = -1;
 
@@ -90,11 +89,11 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 
 		targetProcessId = -1;
 
-		if(em->scanned)
+		if(em && em->scanned)
 		{
-			processEntry_s out[3];
+			processEntry_s out[4];
 			int out_len = 0;
-			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, out, 3, &out_len);
+			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, 3, out, 4, &out_len);
 
 			// temp
 			targetProcessId = out[0].processId;

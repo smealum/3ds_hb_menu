@@ -21,7 +21,8 @@ typedef struct
 const char* servicesThatMatter[] =
 {
 	"soc:U",
-	"csnd:SND"
+	"csnd:SND",
+	"qtm:s"
 };
 
 void initMetadata(executableMetadata_s* em)
@@ -124,7 +125,7 @@ void scanExecutable(executableMetadata_s* em, char* path)
 {
 	if(!em || !path || em->scanned)return;
 
-	Result ret = scan3dsx(path, (char**)servicesThatMatter, 2, em->sectionSizes, em->servicesThatMatter);
+	Result ret = scan3dsx(path, (char**)servicesThatMatter, 3, em->sectionSizes, em->servicesThatMatter);
 
 	if(!ret)em->scanned = true;
 	else em->scanned = false;
@@ -134,7 +135,7 @@ void scanMenuEntry(menuEntry_s* me)
 {
 	if(!me)return;
 
-	char tmp[0x200];
+	static char tmp[0x200];
 	snprintf(tmp, 0x200, "sdmc:%s", me->executablePath);
 
 	scanExecutable(&me->metadata, tmp);

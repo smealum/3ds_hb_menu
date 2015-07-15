@@ -299,7 +299,7 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	strncpy(me->name, name, ENTRY_NAMELENGTH);
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
 	strncpy(me->author, author, ENTRY_AUTHORLENGTH);
-	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
+	if(iconData)memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 
 	initMetadata(&me->metadata);
 }

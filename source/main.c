@@ -35,7 +35,7 @@ int debugValues[100];
 void drawDebug()
 {
 	char str[256];
-	sprintf(str, "hello3 %08X %d %d %d %d %d\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55]);
+	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n%d %d %d %d\n%d %d %d %d\n%d %d %d %d\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
 }
 
@@ -259,6 +259,13 @@ int main()
 	}
 
 	menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+
+	if(netloader_boot)
+	{
+		me = malloc(sizeof(menuEntry_s));
+		initMenuEntry(me, netloadedPath, "netloaded app", "", "", NULL);
+	}
+
 	scanMenuEntry(me);
 
 	// cleanup whatever we have to cleanup
@@ -273,10 +280,9 @@ int main()
 	aptExit();
 	srvExit();
 
-	if(!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable)return regionFreeRun();
+	if(!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable && !netloader_boot)return regionFreeRun();
 	
 	regionFreeExit();
 
-	if(netloader_boot)return bootApp(netloadedPath, NULL);
-	else return bootApp(me->executablePath, &me->metadata);
+	return bootApp(me->executablePath, &me->metadata);
 }
