@@ -43,6 +43,16 @@ static void launchFile_2x(void)
 	else callBootloaderNewProcess_2x(targetProcessId, argbuffer, argbuffer_length);
 }
 
+bool isNinjhax2(void)
+{
+	Result ret = hbInit();
+	if(!ret)
+	{
+		hbExit();
+		return false;
+	}else return true;
+}
+
 int bootApp(char* executablePath, executableMetadata_s* em)
 {
 	// open file that we're going to boot up

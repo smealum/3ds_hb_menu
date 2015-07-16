@@ -27,6 +27,7 @@ static enum
 {
 	NETLOADER_INACTIVE,
 	NETLOADER_ACTIVE,
+	NETLOADER_UNAVAILABLE_NINJHAX2,
 	NETLOADER_ERROR,
 } netloader_state = NETLOADER_INACTIVE;
 
@@ -86,6 +87,13 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 		drawError(GFX_BOTTOM,
 			"NetLoader",
 			bof);
+	}else if(netloader_state == NETLOADER_UNAVAILABLE_NINJHAX2){
+		drawError(GFX_BOTTOM,
+			"NetLoader",
+			"    The NetLoader is currently unavailable. :(\n"
+			"    This might be normal and fixable. Try and enable it ?\n\n"
+			"                                                                                            A : Yes\n"
+			"                                                                                            B : No\n");
 	}else if(netloader_state == NETLOADER_ERROR){
 		netloader_draw_error();
 	}else{
@@ -215,6 +223,19 @@ int main()
 					netloader_state = NETLOADER_ERROR;
 				}
 			}
+		}else if(netloader_state == NETLOADER_UNAVAILABLE_NINJHAX2){
+			if(hidKeysDown()&KEY_B){
+				netloader_state = NETLOADER_INACTIVE;
+			}else if(hidKeysDown()&KEY_A){
+				if(isNinjhax2())
+				{
+					// basically just relaunch boot.3dsx w/ scanning in hopes of getting netloader capabilities
+					static char hbmenuPath[] = "/boot.3dsx";
+					netloadedPath = hbmenuPath; // fine since it's static
+					netloader_boot = true;
+					break;
+				}
+			}
 		}else if(netloader_state == NETLOADER_ERROR){
 			if(hidKeysDown()&KEY_B)
 				netloader_state = NETLOADER_INACTIVE;
@@ -234,8 +255,8 @@ int main()
 			if(hidKeysDown()&KEY_START)rebootCounter--;
 			if(hidKeysDown()&KEY_Y)
 			{
-				if(netloader_activate() == 0)
-					netloader_state = NETLOADER_ACTIVE;
+				if(netloader_activate() == 0) netloader_state = NETLOADER_ACTIVE;
+				else if(isNinjhax2()) netloader_state = NETLOADER_UNAVAILABLE_NINJHAX2;
 			}
 			if(secretCode())brewMode = true;
 			else if(updateMenu(&menu))break;
