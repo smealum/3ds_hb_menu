@@ -103,7 +103,7 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 		{
 			processEntry_s out[4];
 			int out_len = 0;
-			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, 3, out, 4, &out_len);
+			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, 4, out, 4, &out_len);
 
 			// temp
 			targetProcessId = out[0].processId;

@@ -22,7 +22,8 @@ const char* servicesThatMatter[] =
 {
 	"soc:U",
 	"csnd:SND",
-	"qtm:s"
+	"qtm:s",
+	"nfc:u"
 };
 
 void initMetadata(executableMetadata_s* em)
@@ -125,7 +126,7 @@ void scanExecutable(executableMetadata_s* em, char* path)
 {
 	if(!em || !path || em->scanned)return;
 
-	Result ret = scan3dsx(path, (char**)servicesThatMatter, 3, em->sectionSizes, em->servicesThatMatter);
+	Result ret = scan3dsx(path, (char**)servicesThatMatter, 4, em->sectionSizes, em->servicesThatMatter);
 
 	if(!ret)em->scanned = true;
 	else em->scanned = false;
