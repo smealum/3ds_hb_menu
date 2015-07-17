@@ -84,7 +84,8 @@ void drawMenu(menu_s* m)
 			"    Please take out your SD card, create a folder named \"3ds\" at the root of\n"
 			"your card and place homebrew there.\n"
 			"    Then, simply insert your SD card back into your 3DS !\n"
-			"    The homebrew launcher will take it from there.");
+			"    The homebrew launcher will take it from there.",
+			0);
 	}else{
 		menuEntry_s* me=m->entries;
 		int i=0;
