@@ -18,7 +18,7 @@ void initErrors()
 	//placeholder
 }
 
-void drawError(gfxScreen_t screen, char* title, char* body)
+void drawError(gfxScreen_t screen, char* title, char* body, int offset)
 {
 	int i;
 
@@ -26,7 +26,7 @@ void drawError(gfxScreen_t screen, char* title, char* body)
 
 	int width=numLines*8+32;
 	int height=300;
-	int x=240-width-12, y=4;
+	int x=240-width-12+offset, y=4;
 
 	//main frame
 	for(i=0; i<9; i++)gfxDrawRectangle(screen, GFX_LEFT, ENTRY_BGCOLOR, x+roundLutError[i], y+i, width-roundLutError[i]*2, 1);

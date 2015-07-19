@@ -2,7 +2,9 @@
 #define BOOT_H
 
 #include <3ds.h>
+#include "scanner.h"
 
-int bootApp(char* executablePath);
+bool isNinjhax2(void);
+int bootApp(char* executablePath, executableMetadata_s* em);
 
 #endif

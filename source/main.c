@@ -25,17 +25,19 @@ int rebootCounter;
 
 static enum
 {
-	NETLOADER_INACTIVE,
-	NETLOADER_ACTIVE,
-	NETLOADER_ERROR,
-} netloader_state = NETLOADER_INACTIVE;
+	HBMENU_DEFAULT,
+	HBMENU_REGIONFREE,
+	HBMENU_NETLOADER_ACTIVE,
+	HBMENU_NETLOADER_UNAVAILABLE_NINJHAX2,
+	HBMENU_NETLOADER_ERROR,
+} hbmenu_state = HBMENU_DEFAULT;
 
 int debugValues[100];
 
 void drawDebug()
 {
 	char str[256];
-	sprintf(str, "hello3 %d %d %d %d\n", debugValues[0], debugValues[1], debugValues[2], debugValues[3]);
+	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n%d %d %d %d\n%d %d %d %d\n%d %d %d %d\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
 }
 
@@ -61,14 +63,16 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 			"Reboot",
 			"    You're about to reboot your console into home menu.\n\n"
 			"                                                                                            A : Proceed\n"
-			"                                                                                            B : Cancel\n");
+			"                                                                                            B : Cancel\n",
+			0);
 	}else if(!sdmcCurrent)
 	{
 		//no SD
 		drawError(GFX_BOTTOM,
 			"No SD detected",
 			"    It looks like your 3DS doesn't have an SD inserted into it.\n"
-			"    Please insert an SD card for optimal homebrew launcher performance !\n");
+			"    Please insert an SD card for optimal homebrew launcher performance !\n",
+			0);
 	}else if(sdmcCurrent<0)
 	{
 		//SD error
@@ -76,20 +80,47 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 			"SD Error",
 			"    Something unexpected happened when trying to mount your SD card.\n"
 			"    Try taking it out and putting it back in. If that doesn't work,\n"
-			"please try again with another SD card.");
-	}else if(netloader_state == NETLOADER_ACTIVE){
+			"please try again with another SD card.",
+			0);
+	}else if(hbmenu_state == HBMENU_NETLOADER_ACTIVE){
 		char bof[256];
 		u32 ip = gethostid();
 		sprintf(bof,
 			"    NetLoader Active\n"
-			"    IP: %lu.%lu.%lu.%lu, Port: %d\n"
+			"    IP: %lu.%lu.%lu.%lu, Port: %d\n\n"
 			"                                                                                            B : Cancel\n",
 			ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF, NETLOADER_PORT);
 
 		drawError(GFX_BOTTOM,
 			"NetLoader",
-			bof);
-	}else if(netloader_state == NETLOADER_ERROR){
+			bof,
+			0);
+	}else if(hbmenu_state == HBMENU_NETLOADER_UNAVAILABLE_NINJHAX2){
+		drawError(GFX_BOTTOM,
+			"NetLoader",
+			"    The NetLoader is currently unavailable. :(\n"
+			"    This might be normal and fixable. Try and enable it ?\n\n"
+			"                                                                                            A : Yes\n"
+			"                                                                                            B : No\n",
+			0);
+	}else if(hbmenu_state == HBMENU_REGIONFREE){
+		if(regionFreeGamecardIn)
+		{
+			drawError(GFX_BOTTOM,
+				"Region free launcher",
+				"    The region free launcher is ready to run your out-of-region gamecard !\n\n"
+				"                                                                                                                 A : Play\n"
+				"                                                                                                                 B : Cancel\n",
+				10-drawMenuEntry(&gamecardMenuEntry, GFX_BOTTOM, 240, 9, true));
+		}else{
+			drawError(GFX_BOTTOM,
+				"Region free launcher",
+				"    The region free loader cannot detect a gamecard in the slot.\n"
+				"    Please insert a gamecard in your console before continuing.\n\n"
+				"                                                                                            B : Cancel\n",
+				0);
+		}
+	}else if(hbmenu_state == HBMENU_NETLOADER_ERROR){
 		netloader_draw_error();
 	}else{
 		//got SD
@@ -181,6 +212,8 @@ int main()
 	{
 		if (nextSdCheck < osGetTime())
 		{
+			regionFreeUpdate();
+
 			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
 
 			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
@@ -204,10 +237,10 @@ int main()
 
 		updateBackground();
 
-		if(netloader_state == NETLOADER_ACTIVE){
+		if(hbmenu_state == HBMENU_NETLOADER_ACTIVE){
 			if(hidKeysDown()&KEY_B){
 				netloader_deactivate();
-				netloader_state = NETLOADER_INACTIVE;
+				hbmenu_state = HBMENU_DEFAULT;
 			}else{
 				int rc = netloader_loop();
 				if(rc > 0)
@@ -215,12 +248,33 @@ int main()
 					netloader_boot = true;
 					break;
 				}else if(rc < 0){
-					netloader_state = NETLOADER_ERROR;
+					hbmenu_state = HBMENU_NETLOADER_ERROR;
 				}
 			}
-		}else if(netloader_state == NETLOADER_ERROR){
+		}else if(hbmenu_state == HBMENU_NETLOADER_UNAVAILABLE_NINJHAX2){
+			if(hidKeysDown()&KEY_B){
+				hbmenu_state = HBMENU_DEFAULT;
+			}else if(hidKeysDown()&KEY_A){
+				if(isNinjhax2())
+				{
+					// basically just relaunch boot.3dsx w/ scanning in hopes of getting netloader capabilities
+					static char hbmenuPath[] = "/boot.3dsx";
+					netloadedPath = hbmenuPath; // fine since it's static
+					netloader_boot = true;
+					break;
+				}
+			}
+		}else if(hbmenu_state == HBMENU_REGIONFREE){
+			if(hidKeysDown()&KEY_B){
+				hbmenu_state = HBMENU_DEFAULT;
+			}else if(hidKeysDown()&KEY_A && regionFreeGamecardIn)
+			{
+				// region free menu entry is selected so we can just break out like updateMenu() normally would
+				break;
+			}
+		}else if(hbmenu_state == HBMENU_NETLOADER_ERROR){
 			if(hidKeysDown()&KEY_B)
-				netloader_state = NETLOADER_INACTIVE;
+				hbmenu_state = HBMENU_DEFAULT;
 		}else if(rebootCounter==256){
 			if(hidKeysDown()&KEY_A)
 			{
@@ -237,8 +291,8 @@ int main()
 			if(hidKeysDown()&KEY_START)rebootCounter--;
 			if(hidKeysDown()&KEY_Y)
 			{
-				if(netloader_activate() == 0)
-					netloader_state = NETLOADER_ACTIVE;
+				if(netloader_activate() == 0) hbmenu_state = HBMENU_NETLOADER_ACTIVE;
+				else if(isNinjhax2()) hbmenu_state = HBMENU_NETLOADER_UNAVAILABLE_NINJHAX2;
 			}
 			if(secretCode())brewMode = true;
 			else if(hidKeysDown()&KEY_B) {
@@ -247,16 +301,20 @@ int main()
 					initMenu(&menu);
 					scanHomebrewDirectory(&menu);
 			}
-			else if(updateMenu(&menu)) {
-				menuEntry_s* me=getMenuEntry(&menu, menu.selectedEntry);
-				if(me->type == MENU_ENTRY_FOLDER) {
+			else if(updateMenu(&menu))
+			{
+				menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+				if(me && me->type == MENU_ENTRY_FOLDER) {
 					changeDirectory(me->executablePath);
 					clearMenuEntries(&menu);
 					initMenu(&menu);
 					scanHomebrewDirectory(&menu);
-				}
-				else
-					break;
+				} else
+				if(me && !strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable && !netloader_boot)
+				{
+					hbmenu_state = HBMENU_REGIONFREE;
+					regionFreeUpdate();
+				}else break;
 			}
 		}
 
@@ -277,6 +335,16 @@ int main()
 		gspWaitForVBlank();
 	}
 
+	menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+
+	if(netloader_boot)
+	{
+		me = malloc(sizeof(menuEntry_s));
+		initMenuEntry(me, netloadedPath, "netloaded app", "", "", NULL, MENU_ENTRY_FILE);
+	}
+
+	scanMenuEntry(me);
+
 	// cleanup whatever we have to cleanup
 	netloader_exit();
 	ptmExit();
@@ -287,20 +355,9 @@ int main()
 	closeSDArchive();
 	aptExit();
 
-	// check for netloader
-	if (netloader_boot)
-	{
-		regionFreeExit();
-		return bootApp(netloadedPath);
-	}
-
-	menuEntry_s* menuEntry = getMenuEntry(&menu, menu.selectedEntry);
-	if(regionFreeAvailable && menuEntry == &regionfreeEntry)
-	{
-		regionFreeRun();
-		return 0;
-	}
+	if (!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable && !netloader_boot)return regionFreeRun();
 
 	regionFreeExit();
-	return bootApp(menuEntry->executablePath);
+
+	return bootApp(me->executablePath, &me->metadata);
 }

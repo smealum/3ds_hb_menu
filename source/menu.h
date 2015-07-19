@@ -1,5 +1,6 @@
 #pragma once
 #include "gfx.h"
+#include "scanner.h"
 
 #define ENTRY_PATHLENGTH (128)
 #define ENTRY_NAMELENGTH (64)
@@ -35,6 +36,7 @@ typedef struct menuEntry_s
 	char author[ENTRY_AUTHORLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
 	menuEntryType_s type;
+	executableMetadata_s metadata;
 	struct menuEntry_s* next;
 }menuEntry_s;
 
@@ -71,3 +73,5 @@ menuEntry_s* getMenuEntry(menu_s* m, u16 n);
 void initEmptyMenuEntry(menuEntry_s* me);
 void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type);
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected);
+
+void scanMenuEntry(menuEntry_s* me);

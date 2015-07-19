@@ -44,7 +44,7 @@ static char progress[256];
 static int netloader_draw_progress(void) {
 	char info[1024];
 	sprintf(info, "Transferring: %s\n\n%s",netloadedPath,progress);
-	drawError(GFX_BOTTOM, "NetLoader", info);
+	drawError(GFX_BOTTOM, "NetLoader", info, 0);
 	gfxFlushBuffers();
 	gfxSwapBuffers();
 
@@ -166,7 +166,7 @@ static int decompress(int sock, FILE *fh, size_t filesize) {
 
 
 int netloader_draw_error(void) {
-	drawError(GFX_BOTTOM, "Failure", errbuf);
+	drawError(GFX_BOTTOM, "Failure", errbuf, 0);
 	return 0;
 }
 

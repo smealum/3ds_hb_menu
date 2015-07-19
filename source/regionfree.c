@@ -3,20 +3,54 @@
 #include "regionfree.h"
 
 bool regionFreeAvailable = false;
+bool regionFreeGamecardIn = false;
 Handle nssHandle = 0;
+
+smdh_s gamecardSmdh;
+menuEntry_s gamecardMenuEntry;
 
 Result regionFreeInit()
 {
 	Result ret = srvGetServiceHandle(&nssHandle, "ns:s");
 
-	if(!ret)regionFreeAvailable=true;
+	if(!ret)regionFreeAvailable = true;
+	regionFreeGamecardIn = false;
 
 	return ret;
 }
 
 Result regionFreeExit()
 {
-	svcCloseHandle(nssHandle);
+	return svcCloseHandle(nssHandle);
+}
+
+void regionFreeUpdate()
+{
+	if(!regionFreeAvailable)return;
+
+	Result ret = loadGamecardIcon(&gamecardSmdh);
+
+	regionFreeGamecardIn = (ret == 0);
+
+	if(regionFreeGamecardIn)extractSmdhData(&gamecardSmdh, gamecardMenuEntry.name, gamecardMenuEntry.description, gamecardMenuEntry.author, gamecardMenuEntry.iconData);
+}
+
+Result loadGamecardIcon(smdh_s* out)
+{
+	if(!out)return -1;
+
+	Handle fileHandle;
+	static const u32 archivePath[] = {0x00000000, 0x00000000, 0x00000002, 0x00000000};
+	static const u32 filePath[] = {0x00000000, 0x00000000, 0x00000002, 0x6E6F6369, 0x00000000};	
+	Result ret = FSUSER_OpenFileDirectly(NULL, &fileHandle, (FS_archive){0x2345678a, (FS_path){PATH_BINARY, 0x10, (u8*)archivePath}}, (FS_path){PATH_BINARY, 0x14, (u8*)filePath}, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	if(ret)return ret;
+
+	u32 bytesRead;
+	ret = FSFILE_Read(fileHandle, &bytesRead, 0x0, out, sizeof(smdh_s));
+
+	FSFILE_Close(fileHandle);
+
+	return ret;
 }
 
 Result NSS_Reboot(u32 pid_low, u32 pid_high, u8 mediatype, u8 flag)

@@ -36,6 +36,7 @@ void initMenu(menu_s* m)
 	if(regionFreeAvailable)
 	{
 		extractSmdhData((smdh_s*)regionfree_bin, regionfreeEntry.name, regionfreeEntry.description, regionfreeEntry.author, regionfreeEntry.iconData);
+		strcpy(regionfreeEntry.executablePath, REGIONFREE_PATH);
 		addMenuEntryCopy(m, &regionfreeEntry);
 	}
 }
@@ -77,8 +78,14 @@ void drawMenu(menu_s* m)
 	if(!m->numEntries)
 	{
 		drawError(GFX_BOTTOM,
-			"Empty",
-			"    No applications or folders found here.");
+			"Error",
+			"    It seems you don't have any homebrew applications installed on your\n"
+			"SD card.\n"
+			"    Please take out your SD card, create a folder named \"3ds\" at the root of\n"
+			"your card and place homebrew there.\n"
+			"    Then, simply insert your SD card back into your 3DS !\n"
+			"    The homebrew launcher will take it from there.",
+			0);
 	}else{
 		menuEntry_s* me=m->entries;
 		int i=0;
@@ -293,8 +300,10 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	strncpy(me->name, name, ENTRY_NAMELENGTH);
 	strncpy(me->description, description, ENTRY_DESCLENGTH);
 	strncpy(me->author, author, ENTRY_AUTHORLENGTH);
-	memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 	me->type = type;
+	if(iconData)memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
+
+	initMetadata(&me->metadata);
 }
 
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)
