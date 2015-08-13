@@ -287,6 +287,9 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->description[0]=0x00;
 	me->executablePath[0]=0x00;
 
+	initMetadata(&me->metadata);
+	initDescriptor(&me->descriptor);
+
 	me->next=NULL;
 }
 
@@ -303,6 +306,7 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	if(iconData)memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 
 	initMetadata(&me->metadata);
+	initDescriptor(&me->descriptor);
 }
 
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)

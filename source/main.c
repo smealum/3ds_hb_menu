@@ -12,6 +12,7 @@
 #include "netloader.h"
 #include "regionfree.h"
 #include "boot.h"
+#include "titles.h"
 
 bool brewMode = false;
 u8 sdmcCurrent = 0;
@@ -22,11 +23,14 @@ u32 wifiStatus = 0;
 u8 batteryLevel = 5;
 u8 charging = 0;
 int rebootCounter;
+titleBrowser_s titleBrowser;
 
 static enum
 {
 	HBMENU_DEFAULT,
 	HBMENU_REGIONFREE,
+	HBMENU_TITLESELECT,
+	HBMENU_TITLETARGET_ERROR,
 	HBMENU_NETLOADER_ACTIVE,
 	HBMENU_NETLOADER_UNAVAILABLE_NINJHAX2,
 	HBMENU_NETLOADER_ERROR,
@@ -37,8 +41,8 @@ int debugValues[100];
 void drawDebug()
 {
 	char str[256];
-	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n%d %d %d %d\n%d %d %d %d\n%d %d %d %d\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
-	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 32, 100);
+	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 48, 100);
 }
 
 void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
@@ -50,7 +54,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawStatusBar(wifiStatus, charging, batteryLevel);
 
 	// debug text
-	// drawDebug();
+	drawDebug();
 
 	//menu stuff
 	if(rebootCounter<257)
@@ -117,6 +121,15 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 				"                                                                                            B : Cancel\n",
 				0);
 		}
+	}else if(hbmenu_state == HBMENU_TITLESELECT){
+		drawTitleBrowser(&titleBrowser);
+	}else if(hbmenu_state == HBMENU_TITLETARGET_ERROR){
+		drawError(GFX_BOTTOM,
+			"Missing target title",
+			"    The application you are trying to run requested a specific target title.\n"
+			"    Please make sure you have that title !\n\n"
+			"                                                                                            B : Back\n",
+			0);
 	}else if(hbmenu_state == HBMENU_NETLOADER_ERROR){
 		netloader_draw_error();
 	}else{
@@ -185,12 +198,19 @@ int main()
 	irrstInit(NULL);
 	acInit();
 	ptmInit();
+	titlesInit();
 	regionFreeInit();
 	netloader_init();
+
+	// offset potential issues caused by homebrew that just ran
+	aptOpenSession();
+	APT_SetAppCpuTimeLimit(NULL, 0);
+	aptCloseSession();
 
 	initBackground();
 	initErrors();
 	initMenu(&menu);
+	initTitleBrowser(&titleBrowser, NULL);
 
 	u8 sdmcPrevious = 0;
 	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
@@ -234,6 +254,15 @@ int main()
 
 		updateBackground();
 
+		menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+		debugValues[50] = me->descriptor.numTargetTitles;
+		debugValues[51] = me->descriptor.selectTargetProcess;
+		if(me->descriptor.numTargetTitles)
+		{
+			debugValues[58] = (me->descriptor.targetTitles[0].tid >> 32) & 0xFFFFFFFF;
+			debugValues[59] = me->descriptor.targetTitles[0].tid & 0xFFFFFFFF;
+		}
+
 		if(hbmenu_state == HBMENU_NETLOADER_ACTIVE){
 			if(hidKeysDown()&KEY_B){
 				netloader_deactivate();
@@ -269,6 +298,19 @@ int main()
 				// region free menu entry is selected so we can just break out like updateMenu() normally would
 				break;
 			}
+		}else if(hbmenu_state == HBMENU_TITLETARGET_ERROR){
+			if(hidKeysDown()&KEY_B){
+				hbmenu_state = HBMENU_DEFAULT;
+			}
+		}else if(hbmenu_state == HBMENU_TITLESELECT){
+			if(hidKeysDown()&KEY_A && titleBrowser.selected)
+			{
+				targetProcessId = -2;
+				target_title = *titleBrowser.selected;
+				break;
+			}
+			else if(hidKeysDown()&KEY_B)hbmenu_state = HBMENU_DEFAULT;
+			else updateTitleBrowser(&titleBrowser);
 		}else if(hbmenu_state == HBMENU_NETLOADER_ERROR){
 			if(hidKeysDown()&KEY_B)
 				hbmenu_state = HBMENU_DEFAULT;
@@ -299,7 +341,39 @@ int main()
 				{
 					hbmenu_state = HBMENU_REGIONFREE;
 					regionFreeUpdate();
-				}else break;
+				}else
+				{
+					// if appropriate, look for specified titles in list
+					if(me->descriptor.numTargetTitles)
+					{
+						// go through target title list in order so that first ones on list have priority
+						int i;
+						titleInfo_s* ret = NULL;
+						for(i=0; i<me->descriptor.numTargetTitles; i++)
+						{
+							ret = findTitleBrowser(&titleBrowser, me->descriptor.targetTitles[i].mediatype, me->descriptor.targetTitles[i].tid);
+							if(ret)break;
+						}
+
+						if(ret)
+						{
+							targetProcessId = -2;
+							target_title = *ret;
+							break;
+						}
+
+						// if we get here, we aint found shit
+						// if appropriate, let user select target title
+						if(me->descriptor.selectTargetProcess) hbmenu_state = HBMENU_TITLESELECT;
+						else hbmenu_state = HBMENU_TITLETARGET_ERROR;
+					}else
+					{
+						if(me->descriptor.selectTargetProcess) hbmenu_state = HBMENU_TITLESELECT;
+						else break;
+					}
+
+
+				}
 			}
 		}
 
@@ -332,6 +406,7 @@ int main()
 
 	// cleanup whatever we have to cleanup
 	netloader_exit();
+	titlesExit();
 	ptmExit();
 	acExit();
 	irrstExit();

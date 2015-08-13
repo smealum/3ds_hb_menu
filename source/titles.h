@@ -46,5 +46,6 @@ int populateTitleList(titleList_s* tl);
 void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter);
 void updateTitleBrowser(titleBrowser_s* tb);
 void drawTitleBrowser(titleBrowser_s* tb);
+titleInfo_s* findTitleBrowser(titleBrowser_s* tb, u8 mediatype, u64 tid);
 
 #endif

@@ -1,6 +1,8 @@
 #pragma once
+
 #include "gfx.h"
 #include "scanner.h"
+#include "descriptor.h"
 
 #define ENTRY_PATHLENGTH (128)
 #define ENTRY_NAMELENGTH (64)
@@ -30,6 +32,7 @@ typedef struct menuEntry_s
 	char author[ENTRY_AUTHORLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
 	executableMetadata_s metadata;
+	descriptor_s descriptor;
 	struct menuEntry_s* next;
 }menuEntry_s;
 

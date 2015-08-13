@@ -167,6 +167,29 @@ int populateTitleList(titleList_s* tl)
 	return old_num != tl->num;
 }
 
+titleInfo_s* findTitleList(titleList_s* tl, u64 tid)
+{
+	if(!tl)return NULL;
+
+	// special case : gamecard mediatype with 0 tid
+	if(!tid && tl->mediatype == 2 && tl->num)return &tl->titles[0];
+
+	int i;
+	for(i=0; i<tl->num; i++)
+	{
+		if(tl->titles[i].title_id == tid)return &tl->titles[i];
+	}
+
+	return NULL;
+}
+
+titleInfo_s* findTitleBrowser(titleBrowser_s* tb, u8 mediatype, u64 tid)
+{
+	if(!tb || mediatype > 2)return NULL;
+
+	return findTitleList(&tb->lists[mediatype], tid);
+}
+
 void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter)
 {
 	if(!tb)return;
@@ -237,7 +260,6 @@ void updateTitleBrowser(titleBrowser_s* tb)
 
 	if(tb->selected)
 	{
-		debugValues[50] = (u32)(tb->selected->title_id);
 		if(!tb->selected->icon)loadTitleInfoIcon(tb->selected);
 		if(tb->selected->icon)extractSmdhData(tb->selected->icon, tb->selectedEntry.name, tb->selectedEntry.description, tb->selectedEntry.author, tb->selectedEntry.iconData);
 		else
