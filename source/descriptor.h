@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "scanner.h"
 
 typedef struct
 {
@@ -16,16 +17,26 @@ typedef struct
 
 typedef struct
 {
+	char name[9];
+	int priority;
+}serviceRequest_s;
+
+typedef struct
+{
 	targetTitle_s* targetTitles;
 	u32 numTargetTitles;
 	
-	char** requestedServices;
+	serviceRequest_s *requestedServices;
 	u32 numRequestedServices;
 
 	bool selectTargetProcess;
+	bool autodetectServices;
+
+	executableMetadata_s executableMetadata;
 }descriptor_s;
 
 void initDescriptor(descriptor_s* d);
+void freeDescriptor(descriptor_s* d);
 void loadDescriptor(descriptor_s* d, char* path);
 
 #ifdef __cplusplus

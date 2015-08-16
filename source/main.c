@@ -54,7 +54,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	drawStatusBar(wifiStatus, charging, batteryLevel);
 
 	// debug text
-	drawDebug();
+	// drawDebug();
 
 	//menu stuff
 	if(rebootCounter<257)
@@ -421,5 +421,5 @@ int main()
 	
 	regionFreeExit();
 
-	return bootApp(me->executablePath, &me->metadata);
+	return bootApp(me->executablePath, &me->descriptor.executableMetadata);
 }

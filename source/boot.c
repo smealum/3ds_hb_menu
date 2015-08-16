@@ -105,11 +105,39 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 		{
 			if(em->scanned && targetProcessId == -1)
 			{
+				// this is a really shitty implementation of what we should be doing
+				// i'm really too lazy to do any better right now, but a good solution will come
+				// (some day)
 				processEntry_s out[4];
 				int out_len = 0;
-				getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, 4, out, 4, &out_len);
-				// temp
-				targetProcessId = out[0].processId;
+				getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
+
+				// temp : check if we got all the services we want
+				if(em->servicesThatMatter[0] <= out[0].capabilities[0] && em->servicesThatMatter[1] <= out[1].capabilities[1] && em->servicesThatMatter[2] <= out[2].capabilities[2] && em->servicesThatMatter[3] <= out[3].capabilities[3])
+				{
+					targetProcessId = out[0].processId;
+				}else{
+					// temp : if we didn't get everything we wanted, we search for the candidate that has as many highest-priority services as possible
+					int i, j;
+					int best_id = 0;
+					int best_sum = 0;
+					for(i=0; i<4; i++)
+					{
+						int sum = 0;
+						for(j=0; j<NUM_SERVICESTHATMATTER; j++)
+						{
+							sum += (em->servicesThatMatter[j] == 1) && out[i].capabilities[j];
+						}
+
+						if(sum > best_sum)
+						{
+							best_id = i;
+							best_sum = sum;
+						}
+					}
+					targetProcessId = out[best_id].processId;
+				}
+
 			}else if(targetProcessId != -1) targetProcessId = -2;
 		}
 	}

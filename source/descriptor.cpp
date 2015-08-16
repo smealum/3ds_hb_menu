@@ -14,6 +14,9 @@ void initDescriptor(descriptor_s* d)
 	d->numRequestedServices = 0;
 
 	d->selectTargetProcess = false;
+	d->autodetectServices = true;
+
+	initMetadata(&d->executableMetadata);
 }
 
 // TODO : error checking
@@ -27,7 +30,7 @@ void loadDescriptor(descriptor_s* d, char* path)
     XMLElement* targets = doc.FirstChildElement("targets");
     if(targets)
     {
-    	// grab selectable target flag
+    	// grab selectable target flag (default to false)
     	{
     		if(targets->QueryBoolAttribute("selectable", &d->selectTargetProcess)) d->selectTargetProcess = false;
     	}
@@ -62,4 +65,60 @@ void loadDescriptor(descriptor_s* d, char* path)
 			}
     	}
     }
+
+    XMLElement* services = doc.FirstChildElement("services");
+    if(services)
+    {
+    	// grab "autodetect services" flag (default to true)
+    	{
+    		if(services->QueryBoolAttribute("autodetect", &d->autodetectServices)) d->autodetectServices = true;
+    	}
+
+    	// grab requested services
+    	{
+			d->numRequestedServices = 0;
+			for (tinyxml2::XMLElement* child = services->FirstChildElement(); child != NULL; child = child->NextSiblingElement())
+			{
+				if(!strcmp(child->Name(), "request"))
+				{
+					d->numRequestedServices++;
+				}
+			}
+
+			d->requestedServices = (serviceRequest_s*)malloc(sizeof(serviceRequest_s) * d->numRequestedServices);
+			d->numRequestedServices = 0;
+
+			for (tinyxml2::XMLElement* child = services->FirstChildElement(); child != NULL; child = child->NextSiblingElement())
+			{
+				if(!strcmp(child->Name(), "request"))
+				{
+					// 1 (highest) is default priority
+					if(child->QueryIntAttribute("priority", &d->requestedServices[d->numRequestedServices].priority))d->requestedServices[d->numRequestedServices].priority = 1;
+
+					strncpy(d->requestedServices[d->numRequestedServices].name, child->GetText(), 9);
+
+					d->numRequestedServices++;
+				}
+			}
+    	}
+    }
+}
+
+void freeDescriptor(descriptor_s* d)
+{
+	if(!d)return;
+
+	if(d->targetTitles)
+	{
+		free(d->targetTitles);
+		d->targetTitles = NULL;
+	}
+
+	if(d->requestedServices)
+	{
+		free(d->requestedServices);
+		d->requestedServices = NULL;
+	}
+
+	initDescriptor(d);
 }
