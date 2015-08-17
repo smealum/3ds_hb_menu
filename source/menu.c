@@ -125,6 +125,13 @@ void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
 	addMenuEntry(m, me2);
 }
 
+void freeMenuEntry(menuEntry_s* me)
+{
+	if(!me)return;
+
+	freeDescriptor(&me->descriptor);
+}
+
 void clearMenuEntries(menu_s* m)
 {
 	if(!m)return;
@@ -138,6 +145,7 @@ void clearMenuEntries(menu_s* m)
 	{
 		temp=me->next;
 		me->next = NULL;
+		freeMenuEntry(me);
 		free(me);
 		me = temp;
 	}
@@ -287,6 +295,8 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->description[0]=0x00;
 	me->executablePath[0]=0x00;
 
+	initDescriptor(&me->descriptor);
+
 	me->next=NULL;
 }
 
@@ -303,7 +313,7 @@ void initMenuEntry(menuEntry_s* me, char* execPath, char* name, char* descriptio
 	me->type = type;
 	if(iconData)memcpy(me->iconData, iconData, ENTRY_ICONSIZE);
 
-	initMetadata(&me->metadata);
+	initDescriptor(&me->descriptor);
 }
 
 int drawMenuEntry(menuEntry_s* me, gfxScreen_t screen, u16 x, u16 y, bool selected)

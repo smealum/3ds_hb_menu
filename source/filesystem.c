@@ -162,6 +162,15 @@ void addFileToMenu(menu_s* m, char* execPath)
 
 	loadSmdh(&tmpEntry, execPath);
 
+	static char xmlPath[128];
+	snprintf(xmlPath, 128, "%s", execPath);
+	l = strlen(xmlPath);
+	xmlPath[l-1] = 0;
+	xmlPath[l-2] = 'l';
+	xmlPath[l-3] = 'm';
+	xmlPath[l-4] = 'x';
+	if(fileExists(xmlPath, &sdmcArchive)) loadDescriptor(&tmpEntry.descriptor, xmlPath);
+
 	addMenuEntryCopy(m, &tmpEntry);
 }
 
@@ -170,10 +179,19 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	if(!m || !path)return;
 
 	static menuEntry_s tmpEntry;
+	static smdh_s tmpSmdh;
+	static char execPath[128];
+	static char iconPath[128];
+	static char xmlPath[128];
 
-	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/')l=i;
+	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/') l=i;
 
 	initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)folderIcon_bin, MENU_ENTRY_FOLDER);
+
+	snprintf(xmlPath, 128, "%s/descriptor.xml", path);
+	if(!fileExists(xmlPath, &sdmcArchive))snprintf(xmlPath, 128, "%s/%s.xml", path, &path[l+1]);
+	loadDescriptor(&tmpEntry.descriptor, xmlPath);
+
 
 	addMenuEntryCopy(m, &tmpEntry);
 }

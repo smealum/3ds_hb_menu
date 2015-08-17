@@ -32,14 +32,17 @@ typedef struct
 
 void (*callBootloader_2x)(Handle file, u32* argbuf, u32 arglength) = (void*)0x00100000;
 void (*callBootloaderNewProcess_2x)(int processId, u32* argbuf, u32 arglength) = (void*)0x00100008;
+void (*callBootloaderRunTitle_2x)(u8 mediatype, u32* argbuf, u32 argbuflength, u32 tid_low, u32 tid_high) = (void*)0x00100010;
 void (*getBestProcess_2x)(u32 sectionSizes[3], bool* requirements, int num_requirements, processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
 
 int targetProcessId = -1;
+titleInfo_s target_title;
 
 static void launchFile_2x(void)
 {
 	// jump to bootloader
-	if(targetProcessId < 0)callBootloader_2x(hbFileHandle, argbuffer, argbuffer_length);
+	if(targetProcessId == -1)callBootloader_2x(hbFileHandle, argbuffer, argbuffer_length);
+	else if(targetProcessId == -2)callBootloaderRunTitle_2x(target_title.mediatype, argbuffer, argbuffer_length, target_title.title_id & 0xffffffff, (target_title.title_id >> 32) & 0xffffffff);
 	else callBootloaderNewProcess_2x(targetProcessId, argbuffer, argbuffer_length);
 }
 
@@ -63,21 +66,22 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 	// set argv/argc
 	argbuffer[0] = 0;
 	argbuffer_length = 0x200*4;
-	if(netloader_boot) {
-		char *ptr = netloaded_commandline;
-		char *dst = (char*)&argbuffer[1];
-		while (ptr < netloaded_commandline + netloaded_cmdlen) {
-			char *arg = ptr;
-			strcpy(dst,ptr);
-			ptr += strlen(arg) + 1;
-			dst += strlen(arg) + 1;
-			argbuffer[0]++;
-		}
-	}else{
+	// TEMP
+	// if(netloader_boot) {
+	// 	char *ptr = netloaded_commandline;
+	// 	char *dst = (char*)&argbuffer[1];
+	// 	while (ptr < netloaded_commandline + netloaded_cmdlen) {
+	// 		char *arg = ptr;
+	// 		strcpy(dst,ptr);
+	// 		ptr += strlen(arg) + 1;
+	// 		dst += strlen(arg) + 1;
+	// 		argbuffer[0]++;
+	// 	}
+	// }else{
 		argbuffer[0]=1;
 		snprintf((char*)&argbuffer[1], 0x200*4 - 4, "sdmc:%s", executablePath);
 		argbuffer_length = strlen((char*)&argbuffer[1]) + 4 + 1; // don't forget null terminator !
-	}
+	// }
 
 	// figure out the preferred way of running the 3dsx
 	if(!hbInit())
@@ -97,16 +101,44 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 		// override return address to homebrew booting code
 		__system_retAddr = launchFile_2x;
 
-		targetProcessId = -1;
-
-		if(em && em->scanned)
+		if(em)
 		{
-			processEntry_s out[4];
-			int out_len = 0;
-			getBestProcess_2x(em->sectionSizes, em->servicesThatMatter, 4, out, 4, &out_len);
+			if(em->scanned && targetProcessId == -1)
+			{
+				// this is a really shitty implementation of what we should be doing
+				// i'm really too lazy to do any better right now, but a good solution will come
+				// (some day)
+				processEntry_s out[4];
+				int out_len = 0;
+				getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
 
-			// temp
-			targetProcessId = out[0].processId;
+				// temp : check if we got all the services we want
+				if(em->servicesThatMatter[0] <= out[0].capabilities[0] && em->servicesThatMatter[1] <= out[1].capabilities[1] && em->servicesThatMatter[2] <= out[2].capabilities[2] && em->servicesThatMatter[3] <= out[3].capabilities[3])
+				{
+					targetProcessId = out[0].processId;
+				}else{
+					// temp : if we didn't get everything we wanted, we search for the candidate that has as many highest-priority services as possible
+					int i, j;
+					int best_id = 0;
+					int best_sum = 0;
+					for(i=0; i<4; i++)
+					{
+						int sum = 0;
+						for(j=0; j<NUM_SERVICESTHATMATTER; j++)
+						{
+							sum += (em->servicesThatMatter[j] == 1) && out[i].capabilities[j];
+						}
+
+						if(sum > best_sum)
+						{
+							best_id = i;
+							best_sum = sum;
+						}
+					}
+					targetProcessId = out[best_id].processId;
+				}
+
+			}else if(targetProcessId != -1) targetProcessId = -2;
 		}
 	}
 
