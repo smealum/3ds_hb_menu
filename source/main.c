@@ -87,7 +87,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 		char bof[256];
 		u32 ip = gethostid();
 		sprintf(bof,
-			"    NetLoader Active\n"
+			"    NetLoader Active - waiting for 3dslink connection\n"
 			"    IP: %lu.%lu.%lu.%lu, Port: %d\n\n"
 			"                                                                                            B : Cancel\n",
 			ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF, NETLOADER_PORT);
