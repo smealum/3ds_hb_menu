@@ -121,7 +121,7 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 					int i, j;
 					int best_id = 0;
 					int best_sum = 0;
-					for(i=0; i<4; i++)
+					for(i=0; i<out_len; i++)
 					{
 						int sum = 0;
 						for(j=0; j<NUM_SERVICESTHATMATTER; j++)
