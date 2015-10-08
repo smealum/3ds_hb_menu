@@ -412,8 +412,8 @@ int main()
 	irrstExit();
 	hidExit();
 	gfxExit();
-	exitFilesystem();
 	closeSDArchive();
+	exitFilesystem();
 	aptExit();
 	srvExit();
 
