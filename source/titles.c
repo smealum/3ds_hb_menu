@@ -197,7 +197,7 @@ void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter)
 	int i;
 	for(i=0; i<3; i++)
 	{
-		initTitleList(&tb->lists[i], filter, (u8)i);
+		initTitleList(&tb->lists[i], filter, (u8)2-i);
 	}
 
 	tb->total = 0;
