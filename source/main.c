@@ -212,13 +212,14 @@ int main()
 	gfxInitDefault();
 	initFilesystem();
 	openSDArchive();
-	hidInit(NULL);
-	irrstInit(NULL);
+	hidInit();
 	acInit();
 	ptmInit();
 	titlesInit();
 	regionFreeInit();
 	netloader_init();
+
+	osSetSpeedupEnable(true);
 
 	// offset potential issues caused by homebrew that just ran
 	aptOpenSession();
@@ -427,7 +428,6 @@ int main()
 	titlesExit();
 	ptmExit();
 	acExit();
-	irrstExit();
 	hidExit();
 	gfxExit();
 	closeSDArchive();
