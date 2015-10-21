@@ -1,7 +1,7 @@
 #ifndef SCANNER_H
 #define SCANNER_H
 
-#define NUM_SERVICESTHATMATTER 4
+#define NUM_SERVICESTHATMATTER 5
 
 typedef struct
 {

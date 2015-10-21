@@ -113,7 +113,7 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 				getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
 
 				// temp : check if we got all the services we want
-				if(em->servicesThatMatter[0] <= out[0].capabilities[0] && em->servicesThatMatter[1] <= out[1].capabilities[1] && em->servicesThatMatter[2] <= out[2].capabilities[2] && em->servicesThatMatter[3] <= out[3].capabilities[3])
+				if(em->servicesThatMatter[0] <= out[0].capabilities[0] && em->servicesThatMatter[1] <= out[0].capabilities[1] && em->servicesThatMatter[2] <= out[0].capabilities[2] && em->servicesThatMatter[3] <= out[0].capabilities[3] && em->servicesThatMatter[4] <= out[0].capabilities[4])
 				{
 					targetProcessId = out[0].processId;
 				}else{
