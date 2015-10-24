@@ -167,12 +167,13 @@ void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
 		initEmptyMenuEntry(&tmpEntry);
 		ret = extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.author, tmpEntry.iconData);
 		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
-		if(s->name) strncpy(tmpEntry.name, s->name, ENTRY_NAMELENGTH);
-		if(s->description) strncpy(tmpEntry.description, s->description, ENTRY_DESCLENGTH);
-		if(s->author) strncpy(tmpEntry.author, s->author, ENTRY_AUTHORLENGTH);
 	}
 
 	if(ret) initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
+	
+	if(s->name) strncpy(tmpEntry.name, s->name, ENTRY_NAMELENGTH);
+	if(s->description) strncpy(tmpEntry.description, s->description, ENTRY_DESCLENGTH);
+	if(s->author) strncpy(tmpEntry.author, s->author, ENTRY_AUTHORLENGTH);
 
 	if(s->arg)
 	{
