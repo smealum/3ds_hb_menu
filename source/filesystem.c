@@ -182,7 +182,7 @@ void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
 
 	if(fileExists(s->descriptor, &sdmcArchive)) loadDescriptor(&tmpEntry.descriptor, s->descriptor);
 
-	addMenuEntryCopy(m, &tmpEntry);
+	addMenuEntryCopyAt(m, &tmpEntry, 1);
 }
 
 void addShortcutToMenu(menu_s* m, char* shortcutPath)
