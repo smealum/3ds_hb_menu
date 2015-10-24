@@ -187,7 +187,7 @@ titleInfo_s* findTitleBrowser(titleBrowser_s* tb, u8 mediatype, u64 tid)
 {
 	if(!tb || mediatype > 2)return NULL;
 
-	return findTitleList(&tb->lists[mediatype], tid);
+	return findTitleList(&tb->lists[2-mediatype], tid);
 }
 
 void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter)
