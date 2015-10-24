@@ -13,6 +13,9 @@ void initShortcut(shortcut_s* s)
 	s->descriptor = NULL;
 	s->icon = NULL;
 	s->arg = NULL;
+	s->name = NULL;
+	s->description = NULL;
+	s->author = NULL;
 }
 
 Result createShortcut(shortcut_s* s, char* path)
@@ -22,6 +25,22 @@ Result createShortcut(shortcut_s* s, char* path)
 	initShortcut(s);
 	
 	return loadShortcut(s, path);
+}
+
+void loadXmlString(char** out, XMLElement* in, const char* key)
+{
+	if(!out || !in || !key)return;
+
+	XMLElement* node = in->FirstChildElement(key);
+	if(node)
+	{
+		const char* str = node->GetText();
+		if(str)
+		{
+			*out = (char*)malloc(strlen(str) + 1);
+			if(*out) strcpy(*out, str);
+		}
+	}
 }
 
 // TODO : error checking
@@ -56,27 +75,11 @@ Result loadShortcut(shortcut_s* s, char* path)
 			if(s->descriptor) strcpy(s->descriptor, descriptor_path);
 		}
 
-		XMLElement* icon = shortcut->FirstChildElement("icon");
-		if(icon)
-		{
-			const char* str = icon->GetText();
-			if(str)
-			{
-				s->icon = (char*)malloc(strlen(str) + 1);
-				if(s->icon) strcpy(s->icon, str);
-			}
-		}
-
-		XMLElement* arg = shortcut->FirstChildElement("arg");
-		if(arg)
-		{
-			const char* str = arg->GetText();
-			if(str)
-			{
-				s->arg = (char*)malloc(strlen(str) + 1);
-				if(s->arg) strcpy(s->arg, str);
-			}
-		}
+		loadXmlString(&s->icon, shortcut, "icon");
+		loadXmlString(&s->arg, shortcut, "arg");
+		loadXmlString(&s->name, shortcut, "name");
+		loadXmlString(&s->description, shortcut, "description");
+		loadXmlString(&s->author, shortcut, "author");
 	}else return -4;
 
 	return 0;

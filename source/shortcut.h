@@ -13,6 +13,9 @@ typedef struct
 	char* descriptor;
 	char* icon;
 	char* arg;
+	char* name;
+	char* description;
+	char* author;
 }shortcut_s;
 
 void initShortcut(shortcut_s* d);
