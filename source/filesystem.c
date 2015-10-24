@@ -178,3 +178,38 @@ void scanHomebrewDirectory(menu_s* m, char* path)
 
 	FSDIR_Close(dirHandle);
 }
+
+void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
+{
+	if(!m || !s)return;
+
+	static menuEntry_s tmpEntry;
+	static smdh_s tmpSmdh;
+
+	char* execPath = s->executable;
+
+	if(!fileExists(execPath, &sdmcArchive))return;
+
+	int i, l=-1; for(i=0; execPath[i]; i++) if(execPath[i]=='/') l=i;
+
+	char* iconPath = s->icon;
+	int ret = loadFile(iconPath, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
+
+	if(!ret)
+	{
+		initEmptyMenuEntry(&tmpEntry);
+		ret = extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.author, tmpEntry.iconData);
+		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
+	}
+
+	if(ret) initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin);
+
+	if(s->arg)
+	{
+		strncpy(tmpEntry.arg, s->arg, ENTRY_ARGLENGTH);
+	}
+
+	if(fileExists(s->descriptor, &sdmcArchive)) loadDescriptor(&tmpEntry.descriptor, s->descriptor);
+
+	addMenuEntryCopy(m, &tmpEntry);
+}

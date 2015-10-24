@@ -439,5 +439,5 @@ int main()
 	
 	regionFreeExit();
 
-	return bootApp(me->executablePath, &me->descriptor.executableMetadata);
+	return bootApp(me->executablePath, &me->descriptor.executableMetadata, me->arg);
 }

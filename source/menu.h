@@ -8,6 +8,7 @@
 #define ENTRY_NAMELENGTH (64)
 #define ENTRY_DESCLENGTH (128)
 #define ENTRY_AUTHORLENGTH (64)
+#define ENTRY_ARGLENGTH (64)
 #define ENTRY_ICON_WIDTH (48)
 #define ENTRY_ICON_HEIGHT (48)
 #define ENTRY_ICONSIZE (ENTRY_ICON_WIDTH*ENTRY_ICON_HEIGHT*3)
@@ -30,6 +31,7 @@ typedef struct menuEntry_s
 	char name[ENTRY_NAMELENGTH+1];
 	char description[ENTRY_DESCLENGTH+1];
 	char author[ENTRY_AUTHORLENGTH+1];
+	char arg[ENTRY_ARGLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
 	descriptor_s descriptor;
 	struct menuEntry_s* next;

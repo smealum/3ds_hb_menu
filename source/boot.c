@@ -56,7 +56,7 @@ bool isNinjhax2(void)
 	}else return true;
 }
 
-int bootApp(char* executablePath, executableMetadata_s* em)
+int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 {
 	// open file that we're going to boot up
 	fsInit();
@@ -82,6 +82,13 @@ int bootApp(char* executablePath, executableMetadata_s* em)
 		snprintf((char*)&argbuffer[1], 0x200*4 - 4, "sdmc:%s", executablePath);
 		argbuffer_length = strlen((char*)&argbuffer[1]) + 4 + 1; // don't forget null terminator !
 	// }
+
+	if(arg)
+	{
+		strcpy(&(((char*)argbuffer)[argbuffer_length]), arg);
+		argbuffer_length += strlen(arg) + 1;
+		argbuffer[0]++;
+	}
 
 	// figure out the preferred way of running the 3dsx
 	if(!hbInit())

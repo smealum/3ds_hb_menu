@@ -9,6 +9,6 @@ extern int targetProcessId;
 extern titleInfo_s target_title;
 
 bool isNinjhax2(void);
-int bootApp(char* executablePath, executableMetadata_s* em);
+int bootApp(char* executablePath, executableMetadata_s* em, char* arg);
 
 #endif

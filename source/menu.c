@@ -294,6 +294,8 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->name[0]=0x00;
 	me->description[0]=0x00;
 	me->executablePath[0]=0x00;
+	me->author[0]=0x00;
+	me->arg[0]=0x00;
 
 	initDescriptor(&me->descriptor);
 
