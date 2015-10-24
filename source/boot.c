@@ -66,28 +66,35 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 	// set argv/argc
 	argbuffer[0] = 0;
 	argbuffer_length = 0x200*4;
-	// TEMP
-	// if(netloader_boot) {
-	// 	char *ptr = netloaded_commandline;
-	// 	char *dst = (char*)&argbuffer[1];
-	// 	while (ptr < netloaded_commandline + netloaded_cmdlen) {
-	// 		char *arg = ptr;
-	// 		strcpy(dst,ptr);
-	// 		ptr += strlen(arg) + 1;
-	// 		dst += strlen(arg) + 1;
-	// 		argbuffer[0]++;
-	// 	}
-	// }else{
-		argbuffer[0]=1;
-		snprintf((char*)&argbuffer[1], 0x200*4 - 4, "sdmc:%s", executablePath);
-		argbuffer_length = strlen((char*)&argbuffer[1]) + 4 + 1; // don't forget null terminator !
-	// }
 
-	if(arg)
+	argbuffer[0] = 1;
+	snprintf((char*)&argbuffer[1], 0x200*4 - 4, "sdmc:%s", executablePath);
+
 	{
-		strcpy(&(((char*)argbuffer)[argbuffer_length]), arg);
-		argbuffer_length += strlen(arg) + 1;
-		argbuffer[0]++;
+		char *ptr = netloaded_commandline;
+		char *dst = (char*)&argbuffer[1];
+		dst += strlen(dst) + 1; // skip first argument
+
+		if(arg)
+		{
+			strcpy(dst, arg);
+			dst += strlen(arg) + 1;
+			argbuffer[0]++;
+		}
+		
+		if(netloader_boot)
+		{
+			while (ptr < netloaded_commandline + netloaded_cmdlen)
+			{
+				int n = strlen(ptr);
+				strcpy(dst, ptr);
+				ptr += n + 1;
+				dst += n + 1;
+				argbuffer[0]++;
+			}
+		}
+		
+		argbuffer_length = (int)((void*)dst - (void*)argbuffer);
 	}
 
 	// figure out the preferred way of running the 3dsx
