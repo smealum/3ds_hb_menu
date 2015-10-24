@@ -15,13 +15,22 @@ void initShortcut(shortcut_s* s)
 	s->arg = NULL;
 }
 
-// TODO : error checking
-void loadShortcut(shortcut_s* s, char* path)
+Result createShortcut(shortcut_s* s, char* path)
 {
-	if(!s || !path)return;
+	if(!s || !path)return -1;
+
+	initShortcut(s);
+	
+	return loadShortcut(s, path);
+}
+
+// TODO : error checking
+Result loadShortcut(shortcut_s* s, char* path)
+{
+	if(!s || !path)return -1;
 
 	XMLDocument doc;
-	if(doc.LoadFile(path))return;
+	if(doc.LoadFile(path))return -2;
 
 	XMLElement* shortcut = doc.FirstChildElement("shortcut");
 	if(shortcut)
@@ -36,7 +45,7 @@ void loadShortcut(shortcut_s* s, char* path)
 				if(s->executable) strcpy(s->executable, str);
 			}
 		}
-		if(!s->executable) return;
+		if(!s->executable) return -3;
 
 		XMLElement* descriptor = shortcut->FirstChildElement("descriptor");
 		const char* descriptor_path = path;
@@ -68,8 +77,9 @@ void loadShortcut(shortcut_s* s, char* path)
 				if(s->arg) strcpy(s->arg, str);
 			}
 		}
+	}else return -4;
 
-	}
+	return 0;
 }
 
 void freeShortcut(shortcut_s* s)

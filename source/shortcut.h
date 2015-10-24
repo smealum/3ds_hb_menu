@@ -17,7 +17,8 @@ typedef struct
 
 void initShortcut(shortcut_s* d);
 void freeShortcut(shortcut_s* d);
-void loadShortcut(shortcut_s* d, char* path);
+Result loadShortcut(shortcut_s* d, char* path);
+Result createShortcut(shortcut_s* d, char* path);
 
 #ifdef __cplusplus
 }

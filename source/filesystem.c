@@ -76,7 +76,7 @@ bool fileExists(char* path, FS_archive* archive)
 
 extern int debugValues[4];
 
-void addFileToMenu(menu_s* m, char* execPath)
+void addExecutableToMenu(menu_s* m, char* execPath)
 {
 	if(!m || !execPath)return;
 
@@ -145,40 +145,7 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	addMenuEntryCopy(m, &tmpEntry);
 }
 
-void scanHomebrewDirectory(menu_s* m, char* path)
-{
-	if(!path)return;
-
-	Handle dirHandle;
-	FS_path dirPath=FS_makePath(PATH_CHAR, path);
-	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
-	
-	static char fullPath[1024];
-	u32 entriesRead;
-	do
-	{
-		static FS_dirent entry;
-		memset(&entry,0,sizeof(FS_dirent));
-		entriesRead=0;
-		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
-		if(entriesRead)
-		{
-			strncpy(fullPath, path, 1024);
-			int n=strlen(fullPath);
-			unicodeToChar(&fullPath[n], entry.name, 1024-n);
-			if(entry.isDirectory) //directories
-			{
-				addDirectoryToMenu(m, fullPath);
-			}else{ //stray executables
-				n=strlen(fullPath);
-				if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addFileToMenu(m, fullPath);
-			}
-		}
-	}while(entriesRead);
-
-	FSDIR_Close(dirHandle);
-}
-
+// should go in menu.c ?
 void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
 {
 	if(!m || !s)return;
@@ -212,4 +179,51 @@ void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
 	if(fileExists(s->descriptor, &sdmcArchive)) loadDescriptor(&tmpEntry.descriptor, s->descriptor);
 
 	addMenuEntryCopy(m, &tmpEntry);
+}
+
+void addShortcutToMenu(menu_s* m, char* shortcutPath)
+{
+	if(!m || !shortcutPath)return;
+
+	static shortcut_s tmpShortcut;
+
+	Result ret = createShortcut(&tmpShortcut, shortcutPath);
+	if(!ret) createMenuEntryShortcut(m, &tmpShortcut);
+
+	freeShortcut(&tmpShortcut);
+}
+
+void scanHomebrewDirectory(menu_s* m, char* path)
+{
+	if(!path)return;
+
+	Handle dirHandle;
+	FS_path dirPath=FS_makePath(PATH_CHAR, path);
+	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
+	
+	static char fullPath[1024];
+	u32 entriesRead;
+	do
+	{
+		static FS_dirent entry;
+		memset(&entry,0,sizeof(FS_dirent));
+		entriesRead=0;
+		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
+		if(entriesRead)
+		{
+			strncpy(fullPath, path, 1024);
+			int n=strlen(fullPath);
+			unicodeToChar(&fullPath[n], entry.name, 1024-n);
+			if(entry.isDirectory) //directories
+			{
+				addDirectoryToMenu(m, fullPath);
+			}else{ //stray executables and shortcuts
+				n=strlen(fullPath);
+				if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addExecutableToMenu(m, fullPath);
+				if(n>4 && !strcmp(".xml", &fullPath[n-4]))addShortcutToMenu(m, fullPath);
+			}
+		}
+	}while(entriesRead);
+
+	FSDIR_Close(dirHandle);
 }
