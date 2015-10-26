@@ -42,7 +42,7 @@ Result loadGamecardIcon(smdh_s* out)
 	Handle fileHandle;
 	static const u32 archivePath[] = {0x00000000, 0x00000000, 0x00000002, 0x00000000};
 	static const u32 filePath[] = {0x00000000, 0x00000000, 0x00000002, 0x6E6F6369, 0x00000000};	
-	Result ret = FSUSER_OpenFileDirectly(NULL, &fileHandle, (FS_archive){0x2345678a, (FS_path){PATH_BINARY, 0x10, (u8*)archivePath}}, (FS_path){PATH_BINARY, 0x14, (u8*)filePath}, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	Result ret = FSUSER_OpenFileDirectly(&fileHandle, (FS_archive){0x2345678a, (FS_path){PATH_BINARY, 0x10, (u8*)archivePath}}, (FS_path){PATH_BINARY, 0x14, (u8*)filePath}, FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	if(ret)return ret;
 
 	u32 bytesRead;

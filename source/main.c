@@ -198,7 +198,7 @@ int main()
 	gfxInitDefault();
 	initFilesystem();
 	openSDArchive();
-	hidInit(NULL);
+	hidInit();
 	acInit();
 	ptmInit();
 	titlesInit();
@@ -207,7 +207,7 @@ int main()
 
 	// offset potential issues caused by homebrew that just ran
 	aptOpenSession();
-	APT_SetAppCpuTimeLimit(NULL, 0);
+	APT_SetAppCpuTimeLimit(0);
 	aptCloseSession();
 
 	initBackground();
@@ -216,7 +216,7 @@ int main()
 	initTitleBrowser(&titleBrowser, NULL);
 
 	u8 sdmcPrevious = 0;
-	FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+	FSUSER_IsSdmcDetected(&sdmcCurrent);
 	if(sdmcCurrent == 1)
 	{
 		scanHomebrewDirectory(&menu);
@@ -234,7 +234,7 @@ int main()
 		{
 			regionFreeUpdate();
 
-			FSUSER_IsSdmcDetected(NULL, &sdmcCurrent);
+			FSUSER_IsSdmcDetected(&sdmcCurrent);
 
 			if(sdmcCurrent == 1 && (sdmcPrevious == 0 || sdmcPrevious < 0))
 			{
@@ -322,7 +322,7 @@ int main()
 			{
 				//reboot
 				aptOpenSession();
-					APT_HardwareResetAsync(NULL);
+					APT_HardwareResetAsync();
 				aptCloseSession();
 				rebootCounter--;
 			}else if(hidKeysDown()&KEY_B)

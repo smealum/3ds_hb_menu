@@ -46,12 +46,12 @@ void exitFilesystem(void)
 void openSDArchive()
 {
 	sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
-	FSUSER_OpenArchive(NULL, &sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive);
 }
 
 void closeSDArchive()
 {
-	FSUSER_CloseArchive(NULL, &sdmcArchive);
+	FSUSER_CloseArchive(&sdmcArchive);
 }
 
 int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
@@ -63,7 +63,7 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(NULL, &fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	if(ret!=0)return ret;
 
 	ret=FSFILE_GetSize(fileHandle, &size);
@@ -101,7 +101,7 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 				_3DSX_Header header;
 
 				// first check for embedded smdh
-				ret = FSUSER_OpenFile(NULL, &fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+				ret = FSUSER_OpenFile(&fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 				if (ret == 0)
 				{
 					ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, &header, sizeof(header));
@@ -137,7 +137,7 @@ bool fileExists(char* path, FS_archive* archive)
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(NULL, &fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	if(ret!=0)return false;
 
 	ret=FSFILE_Close(fileHandle);
@@ -200,7 +200,7 @@ void scanHomebrewDirectory(menu_s* m)
 {
 	Handle dirHandle;
 	FS_path dirPath=FS_makePath(PATH_CHAR, cwd);
-	FSUSER_OpenDirectory(NULL, &dirHandle, sdmcArchive, dirPath);
+	FSUSER_OpenDirectory(&dirHandle, sdmcArchive, dirPath);
 	
 	static char fullPath[1024];
 	u32 entriesRead;
