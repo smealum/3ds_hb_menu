@@ -146,9 +146,9 @@ bool fileExists(char* path, FS_archive* archive)
 	return true;
 }
 
-extern int debugValues[4];
+extern int debugValues[100];
 
-void addFileToMenu(menu_s* m, char* execPath)
+void addExecutableToMenu(menu_s* m, char* execPath)
 {
 	if(!m || !execPath)return;
 
@@ -196,6 +196,58 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	addMenuEntryCopy(m, &tmpEntry);
 }
 
+// should go in menu.c ?
+void createMenuEntryShortcut(menu_s* m, shortcut_s* s)
+{
+	if(!m || !s)return;
+
+	static menuEntry_s tmpEntry;
+	static smdh_s tmpSmdh;
+
+	char* execPath = s->executable;
+
+	if(!fileExists(execPath, &sdmcArchive))return;
+
+	int i, l=-1; for(i=0; execPath[i]; i++) if(execPath[i]=='/') l=i;
+
+	char* iconPath = s->icon;
+	int ret = loadFile(iconPath, &tmpSmdh, &sdmcArchive, sizeof(smdh_s));
+
+	if(!ret)
+	{
+		initEmptyMenuEntry(&tmpEntry);
+		ret = extractSmdhData(&tmpSmdh, tmpEntry.name, tmpEntry.description, tmpEntry.author, tmpEntry.iconData);
+		strncpy(tmpEntry.executablePath, execPath, ENTRY_PATHLENGTH);
+	}
+
+	if(ret) initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin, MENU_ENTRY_FILE);
+	
+	if(s->name) strncpy(tmpEntry.name, s->name, ENTRY_NAMELENGTH);
+	if(s->description) strncpy(tmpEntry.description, s->description, ENTRY_DESCLENGTH);
+	if(s->author) strncpy(tmpEntry.author, s->author, ENTRY_AUTHORLENGTH);
+
+	if(s->arg)
+	{
+		strncpy(tmpEntry.arg, s->arg, ENTRY_ARGLENGTH);
+	}
+
+	if(fileExists(s->descriptor, &sdmcArchive)) loadDescriptor(&tmpEntry.descriptor, s->descriptor);
+
+	addMenuEntryCopyAt(m, &tmpEntry, 1);
+}
+
+void addShortcutToMenu(menu_s* m, char* shortcutPath)
+{
+	if(!m || !shortcutPath)return;
+
+	static shortcut_s tmpShortcut;
+
+	Result ret = createShortcut(&tmpShortcut, shortcutPath);
+	if(!ret) createMenuEntryShortcut(m, &tmpShortcut);
+
+	freeShortcut(&tmpShortcut);
+}
+
 void scanHomebrewDirectory(menu_s* m)
 {
 	Handle dirHandle;
@@ -218,9 +270,10 @@ void scanHomebrewDirectory(menu_s* m)
 			if(entry.isDirectory) //directories
 			{
 				addDirectoryToMenu(m, fullPath);
-			}else{ //stray executables
+			}else{ //stray executables and shortcuts
 				n=strlen(fullPath);
-				if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addFileToMenu(m, fullPath);
+				if(n>5 && !strcmp(".3dsx", &fullPath[n-5]))addExecutableToMenu(m, fullPath);
+				if(n>4 && !strcmp(".xml", &fullPath[n-4]))addShortcutToMenu(m, fullPath);
 			}
 		}
 	}while(entriesRead);

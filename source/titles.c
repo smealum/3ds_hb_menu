@@ -187,7 +187,7 @@ titleInfo_s* findTitleBrowser(titleBrowser_s* tb, u8 mediatype, u64 tid)
 {
 	if(!tb || mediatype > 2)return NULL;
 
-	return findTitleList(&tb->lists[mediatype], tid);
+	return findTitleList(&tb->lists[2-mediatype], tid);
 }
 
 void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter)
@@ -197,7 +197,7 @@ void initTitleBrowser(titleBrowser_s* tb, titleFilter_callback filter)
 	int i;
 	for(i=0; i<3; i++)
 	{
-		initTitleList(&tb->lists[i], filter, (u8)i);
+		initTitleList(&tb->lists[i], filter, (u8)2-i);
 	}
 
 	tb->total = 0;

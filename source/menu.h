@@ -8,6 +8,7 @@
 #define ENTRY_NAMELENGTH (64)
 #define ENTRY_DESCLENGTH (128)
 #define ENTRY_AUTHORLENGTH (64)
+#define ENTRY_ARGLENGTH (64)
 #define ENTRY_ICON_WIDTH (48)
 #define ENTRY_ICON_HEIGHT (48)
 #define ENTRY_ICONSIZE (ENTRY_ICON_WIDTH*ENTRY_ICON_HEIGHT*3)
@@ -36,6 +37,7 @@ typedef struct menuEntry_s
 	char name[ENTRY_NAMELENGTH+1];
 	char description[ENTRY_DESCLENGTH+1];
 	char author[ENTRY_AUTHORLENGTH+1];
+	char arg[ENTRY_ARGLENGTH+1];
 	u8 iconData[ENTRY_ICONSIZE];
 	menuEntryType_s type;
 	descriptor_s descriptor;
@@ -67,6 +69,8 @@ bool updateMenu(menu_s* m);
 void addMenuEntry(menu_s* m, menuEntry_s* me);
 void addMenuEntryCopy(menu_s* m, menuEntry_s* me);
 void sortMenu(menu_s* m);
+void addMenuEntryAt(menu_s* m, menuEntry_s* me, int offset);
+void addMenuEntryCopyAt(menu_s* m, menuEntry_s* me, int offset);
 void clearMenuEntries(menu_s* m);
 void createMenuEntry(menu_s* m, char* execPath, char* name, char* description, char* author, u8* iconData, menuEntryType_s type);
 menuEntry_s* getMenuEntry(menu_s* m, u16 n);

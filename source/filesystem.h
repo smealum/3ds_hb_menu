@@ -1,6 +1,7 @@
 #pragma once
 #include <3ds.h>
 #include "menu.h"
+#include "shortcut.h"
 
 extern FS_archive sdmcArchive;
 
@@ -20,3 +21,6 @@ void addDirectoryToMenu(menu_s* m, char* path);
 void scanHomebrewDirectory(menu_s* m);
 void changeDirectory(const char* path);
 void printDirectory(void);
+
+//shortcut menu stuff
+void createMenuEntryShortcut(menu_s* m, shortcut_s* s);

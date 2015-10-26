@@ -38,12 +38,30 @@ static enum
 
 int debugValues[100];
 
-void drawDebug()
-{
-	char str[256];
-	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
-	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 48, 100);
-}
+// typedef struct
+// {
+// 	int processId;
+// 	bool capabilities[0x10];
+// }processEntry_s;
+
+// void (*_getBestProcess_2x)(u32 sectionSizes[3], bool* requirements, int num_requirements, processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
+
+// void drawDebug()
+// {
+// 	char str[256];
+// 	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
+// 	menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+// 	if(me && me->descriptor.numRequestedServices)
+// 	{
+// 		scanMenuEntry(me);
+// 		executableMetadata_s* em = &me->descriptor.executableMetadata;
+// 		processEntry_s out[4];
+// 		int out_len = 0;
+// 		_getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
+// 		sprintf(str, "hello3 %s %d %d %d %d\n", me->descriptor.requestedServices[0].name, out_len, out[0].processId, out[0].capabilities[4], em->servicesThatMatter[4]);
+// 	}
+// 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 48, 100);
+// }
 
 void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 {
@@ -90,7 +108,7 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 		char bof[256];
 		u32 ip = gethostid();
 		sprintf(bof,
-			"    NetLoader Active\n"
+			"    NetLoader Active - waiting for 3dslink connection\n"
 			"    IP: %lu.%lu.%lu.%lu, Port: %d\n\n"
 			"                                                                                            B : Cancel\n",
 			ip & 0xFF, (ip>>8)&0xFF, (ip>>16)&0xFF, (ip>>24)&0xFF, NETLOADER_PORT);
@@ -204,6 +222,8 @@ int main()
 	titlesInit();
 	regionFreeInit();
 	netloader_init();
+
+	osSetSpeedupEnable(true);
 
 	// offset potential issues caused by homebrew that just ran
 	aptOpenSession();
@@ -361,6 +381,9 @@ int main()
 					// if appropriate, look for specified titles in list
 					if(me->descriptor.numTargetTitles)
 					{
+						// first refresh list (for sd/gamecard)
+						updateTitleBrowser(&titleBrowser);
+
 						// go through target title list in order so that first ones on list have priority
 						int i;
 						titleInfo_s* ret = NULL;
@@ -426,13 +449,13 @@ int main()
 	acExit();
 	hidExit();
 	gfxExit();
-	exitFilesystem();
 	closeSDArchive();
+	exitFilesystem();
 	aptExit();
 
 	if (!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable && !netloader_boot)return regionFreeRun();
 
 	regionFreeExit();
 
-	return bootApp(me->executablePath, &me->descriptor.executableMetadata);
+	return bootApp(me->executablePath, &me->descriptor.executableMetadata, me->arg);
 }

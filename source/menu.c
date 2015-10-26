@@ -101,19 +101,32 @@ void drawMenu(menu_s* m)
 	drawScrollBar(m);
 }
 
-void addMenuEntry(menu_s* m, menuEntry_s* me)
+void addMenuEntryAt(menu_s* m, menuEntry_s* me, int offset)
 {
 	if(!m || !me)return;
+	if(offset == 0) offset++;
 
 	// add to the end of the list
-	menuEntry_s** l = &m->entries;
-	while(*l)l=&(*l)->next;
-	*l = me;
-	me->next = NULL;
+	menuEntry_s* l = m->entries;
+	menuEntry_s** lp = &m->entries;
+	int i = 0;
+	while(l && *lp && i != offset)
+	{
+		lp = &l->next;
+		l = l->next;
+		i++;
+	}
+	*lp = me;
+	me->next = l;
 	m->numEntries++;
 }
 
-void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
+void addMenuEntry(menu_s* m, menuEntry_s* me)
+{
+	addMenuEntryAt(m, me, -1);
+}
+
+void addMenuEntryCopyAt(menu_s* m, menuEntry_s* me, int offset)
 {
 	if(!m || !me)return;
 
@@ -122,7 +135,12 @@ void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
 
 	memcpy(me2, me, sizeof(menuEntry_s));
 	
-	addMenuEntry(m, me2);
+	addMenuEntryAt(m, me2, offset);
+}
+
+void addMenuEntryCopy(menu_s* m, menuEntry_s* me)
+{
+	addMenuEntryCopyAt(m, me, -1);
 }
 
 void freeMenuEntry(menuEntry_s* me)
@@ -294,6 +312,8 @@ void initEmptyMenuEntry(menuEntry_s* me)
 	me->name[0]=0x00;
 	me->description[0]=0x00;
 	me->executablePath[0]=0x00;
+	me->author[0]=0x00;
+	me->arg[0]=0x00;
 
 	initDescriptor(&me->descriptor);
 
