@@ -75,7 +75,7 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 		char *dst = (char*)&argbuffer[1];
 		dst += strlen(dst) + 1; // skip first argument
 
-		if(arg)
+		if(arg && *arg)
 		{
 			strcpy(dst, arg);
 			dst += strlen(arg) + 1;
