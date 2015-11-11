@@ -218,7 +218,7 @@ int main()
 	openSDArchive();
 	hidInit();
 	acInit();
-	ptmInit();
+	ptmuInit();
 	titlesInit();
 	regionFreeInit();
 	netloader_init();
@@ -270,9 +270,9 @@ int main()
 			nextSdCheck = osGetTime()+250;
 		}
 
-		ACU_GetWifiStatus(NULL, &wifiStatus);
-		PTMU_GetBatteryLevel(NULL, &batteryLevel);
-		PTMU_GetBatteryChargeState(NULL, &charging);
+		ACU_GetWifiStatus(&wifiStatus);
+		PTMU_GetBatteryLevel(&batteryLevel);
+		PTMU_GetBatteryChargeState(&charging);
 		hidScanInput();
 
 		updateBackground();
@@ -445,7 +445,7 @@ int main()
 	// cleanup whatever we have to cleanup
 	netloader_exit();
 	titlesExit();
-	ptmExit();
+	ptmuExit();
 	acExit();
 	hidExit();
 	gfxExit();

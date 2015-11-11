@@ -63,7 +63,7 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(&fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	if(ret!=0)return ret;
 
 	ret=FSFILE_GetSize(fileHandle, &size);
@@ -101,7 +101,7 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 				_3DSX_Header header;
 
 				// first check for embedded smdh
-				ret = FSUSER_OpenFile(&fileHandle, sdmcArchive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+				ret = FSUSER_OpenFile(&fileHandle, sdmcArchive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 				if (ret == 0)
 				{
 					ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, &header, sizeof(header));
@@ -137,7 +137,7 @@ bool fileExists(char* path, FS_archive* archive)
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(&fileHandle, *archive, FS_makePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
 	if(ret!=0)return false;
 
 	ret=FSFILE_Close(fileHandle);
@@ -251,7 +251,7 @@ void addShortcutToMenu(menu_s* m, char* shortcutPath)
 void scanHomebrewDirectory(menu_s* m)
 {
 	Handle dirHandle;
-	FS_path dirPath=FS_makePath(PATH_CHAR, cwd);
+	FS_path dirPath=fsMakePath(PATH_CHAR, cwd);
 	FSUSER_OpenDirectory(&dirHandle, sdmcArchive, dirPath);
 	
 	static char fullPath[1024];

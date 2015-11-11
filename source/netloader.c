@@ -175,11 +175,11 @@ int netloader_init(void) {
 	if(SOC_buffer == NULL)
 		return -1;
 
-	Result ret = SOC_Initialize(SOC_buffer, 0x100000);
+	Result ret = socInit(SOC_buffer, 0x100000);
 	if(ret != 0)
 	{
 		// need to free the shared memory block if something goes wrong
-		SOC_Shutdown();
+		socExit();
 		free(SOC_buffer);
 		SOC_buffer = NULL;
 		return -1;
@@ -406,7 +406,7 @@ int netloader_loop(void) {
 }
 
 int netloader_exit(void) {
-	Result ret = SOC_Shutdown();
+	Result ret = socExit();
 	if(ret != 0)
 		return -1;
 	return 0;
