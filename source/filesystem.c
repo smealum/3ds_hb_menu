@@ -11,7 +11,7 @@
 
 static char cwd[1024] = "/3ds/";
 
-FS_archive sdmcArchive;
+FS_Archive sdmcArchive;
 
 // File header
 #define _3DSX_MAGIC 0x58534433 // '3DSX'
@@ -45,7 +45,7 @@ void exitFilesystem(void)
 
 void openSDArchive()
 {
-	sdmcArchive=(FS_archive){0x00000009, (FS_path){PATH_EMPTY, 1, (u8*)""}};
+	sdmcArchive=(FS_Archive){0x00000009, (FS_Path){PATH_EMPTY, 1, (u8*)""}};
 	FSUSER_OpenArchive(&sdmcArchive);
 }
 
@@ -54,7 +54,7 @@ void closeSDArchive()
 	FSUSER_CloseArchive(&sdmcArchive);
 }
 
-int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
+int loadFile(char* path, void* dst, FS_Archive* archive, u64 maxSize)
 {
 	if(!path || !dst || !archive)return -1;
 
@@ -63,7 +63,7 @@ int loadFile(char* path, void* dst, FS_archive* archive, u64 maxSize)
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_ASCII, path), FS_OPEN_READ, 0);
 	if(ret!=0)return ret;
 
 	ret=FSFILE_GetSize(fileHandle, &size);
@@ -101,7 +101,7 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 				_3DSX_Header header;
 
 				// first check for embedded smdh
-				ret = FSUSER_OpenFile(&fileHandle, sdmcArchive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+				ret = FSUSER_OpenFile(&fileHandle, sdmcArchive, fsMakePath(PATH_ASCII, path), FS_OPEN_READ, 0);
 				if (ret == 0)
 				{
 					ret=FSFILE_Read(fileHandle, &bytesRead, 0x0, &header, sizeof(header));
@@ -130,14 +130,14 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 	}
 }
 
-bool fileExists(char* path, FS_archive* archive)
+bool fileExists(char* path, FS_Archive* archive)
 {
 	if(!path || !archive)return false;
 
 	Result ret;
 	Handle fileHandle;
 
-	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_CHAR, path), FS_OPEN_READ, FS_ATTRIBUTE_NONE);
+	ret=FSUSER_OpenFile(&fileHandle, *archive, fsMakePath(PATH_ASCII, path), FS_OPEN_READ, 0);
 	if(ret!=0)return false;
 
 	ret=FSFILE_Close(fileHandle);
@@ -179,9 +179,9 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	if(!m || !path)return;
 
 	static menuEntry_s tmpEntry;
-	static smdh_s tmpSmdh;
-	static char execPath[128];
-	static char iconPath[128];
+	//static smdh_s tmpSmdh;
+	//static char execPath[128];
+	//static char iconPath[128];
 	static char xmlPath[128];
 
 	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/') l=i;
@@ -251,15 +251,15 @@ void addShortcutToMenu(menu_s* m, char* shortcutPath)
 void scanHomebrewDirectory(menu_s* m)
 {
 	Handle dirHandle;
-	FS_path dirPath=fsMakePath(PATH_CHAR, cwd);
+	FS_Path dirPath=fsMakePath(PATH_ASCII, cwd);
 	FSUSER_OpenDirectory(&dirHandle, sdmcArchive, dirPath);
 	
 	static char fullPath[1024];
 	u32 entriesRead;
 	do
 	{
-		static FS_dirent entry;
-		memset(&entry,0,sizeof(FS_dirent));
+		static FS_DirectoryEntry entry;
+		memset(&entry,0,sizeof(FS_DirectoryEntry));
 		entriesRead=0;
 		FSDIR_Read(dirHandle, &entriesRead, 1, &entry);
 		if(entriesRead)
@@ -267,7 +267,7 @@ void scanHomebrewDirectory(menu_s* m)
 			strncpy(fullPath, cwd, 1024);
 			int n=strlen(fullPath);
 			unicodeToChar(&fullPath[n], entry.name, 1024-n);
-			if(entry.isDirectory) //directories
+			if(entry.attributes & FS_ATTRIBUTE_DIRECTORY) //directories
 			{
 				addDirectoryToMenu(m, fullPath);
 			}else{ //stray executables and shortcuts

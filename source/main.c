@@ -14,14 +14,14 @@
 #include "boot.h"
 #include "titles.h"
 
-bool brewMode = false;
-u8 sdmcCurrent = 0;
-u64 nextSdCheck = 0;
+bool brewMode;
+bool sdmcCurrent;
+u64 nextSdCheck;
 
 menu_s menu;
-u32 wifiStatus = 0;
+u32 wifiStatus;
 u8 batteryLevel = 5;
-u8 charging = 0;
+u8 charging;
 int rebootCounter;
 titleBrowser_s titleBrowser;
 
@@ -235,7 +235,7 @@ int main()
 	initMenu(&menu);
 	initTitleBrowser(&titleBrowser, NULL);
 
-	u8 sdmcPrevious = 0;
+	bool sdmcPrevious = false;
 	FSUSER_IsSdmcDetected(&sdmcCurrent);
 	if(sdmcCurrent == 1)
 	{
