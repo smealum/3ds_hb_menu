@@ -9,7 +9,9 @@
 #include "smdh.h"
 #include "utils.h"
 
-static char cwd[1024] = "/3ds/";
+#define DEFAULT_DIRECTORY "/3ds"
+
+static char cwd[1024] = DEFAULT_DIRECTORY "/";
 
 FS_Archive sdmcArchive;
 
@@ -79,13 +81,14 @@ int loadFile(char* path, void* dst, FS_Archive* archive, u64 maxSize)
 	return ret;
 }
 
-static void loadSmdh(menuEntry_s* entry, const char* path)
+static void loadSmdh(menuEntry_s* entry, const char* path, bool isAppFolder)
 {
 	static char smdhPath[1024];
 	char *p;
 
 	memset(smdhPath, 0, sizeof(smdhPath));
 	strncpy(smdhPath, path, sizeof(smdhPath));
+	char* fnamep = NULL;
 
 	for(p = smdhPath + sizeof(smdhPath)-1; p > smdhPath; --p) {
 		if(*p == '.') {
@@ -122,10 +125,30 @@ static void loadSmdh(menuEntry_s* entry, const char* path)
 						if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) gotsmdh = true;
 					}
 				}
+				if (!gotsmdh) {
+					strcpy(p, ".icn");
+					if(fileExists(smdhPath, &sdmcArchive)) {
+						if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) gotsmdh = true;
+					}
+				}
+				if (!gotsmdh && fnamep && isAppFolder) {
+					strcpy(fnamep, "icon.smdh");
+					if(fileExists(smdhPath, &sdmcArchive)) {
+						if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) gotsmdh = true;
+					}
+				}
+				if (!gotsmdh && fnamep && isAppFolder) {
+					strcpy(fnamep, "icon.icn");
+					if(fileExists(smdhPath, &sdmcArchive)) {
+						if(!loadFile(smdhPath, &smdh, &sdmcArchive, sizeof(smdh))) gotsmdh = true;
+					}
+				}
 
 				if (gotsmdh) extractSmdhData(&smdh, entry->name, entry->description, entry->author, entry->iconData);
 
 			}
+		} else if(*p == '/') {
+			fnamep = p+1;
 		}
 	}
 }
@@ -160,7 +183,7 @@ void addExecutableToMenu(menu_s* m, char* execPath)
 
 	initMenuEntry(&tmpEntry, execPath, &execPath[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin, MENU_ENTRY_FILE);
 
-	loadSmdh(&tmpEntry, execPath);
+	loadSmdh(&tmpEntry, execPath, false);
 
 	static char xmlPath[128];
 	snprintf(xmlPath, 128, "%s", execPath);
@@ -179,19 +202,40 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	if(!m || !path)return;
 
 	static menuEntry_s tmpEntry;
-	//static smdh_s tmpSmdh;
-	//static char execPath[128];
-	//static char iconPath[128];
+	static char execPath[128];
 	static char xmlPath[128];
 
 	int i, l=-1; for(i=0; path[i]; i++) if(path[i]=='/') l=i;
 
-	initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)folderIcon_bin, MENU_ENTRY_FOLDER);
+	// Check for old-style application folder
+	bool exists = false;
+	if (strcmp(path, DEFAULT_DIRECTORY)==0)
+	{
+		snprintf(execPath, 128, "%s/boot.3dsx", path);
+		exists = fileExists(execPath, &sdmcArchive);
+	}
+	if (!exists)
+	{
+		snprintf(execPath, 128, "%s/%s.3dsx", path, &path[l+1]);
+		exists = fileExists(execPath, &sdmcArchive);
+	}
+	if (exists)
+	{
+		// Add the application
+		initMenuEntry(&tmpEntry, execPath, &path[l+1], execPath, "Unknown publisher", (u8*)installerIcon_bin, MENU_ENTRY_FILE);
 
-	snprintf(xmlPath, 128, "%s/descriptor.xml", path);
-	if(!fileExists(xmlPath, &sdmcArchive))snprintf(xmlPath, 128, "%s/%s.xml", path, &path[l+1]);
-	loadDescriptor(&tmpEntry.descriptor, xmlPath);
+		// Load the icon
+		loadSmdh(&tmpEntry, execPath, true);
 
+		// Load the descriptor
+		snprintf(xmlPath, 128, "%s/descriptor.xml", path);
+		if(!fileExists(xmlPath, &sdmcArchive))snprintf(xmlPath, 128, "%s/%s.xml", path, &path[l+1]);
+		loadDescriptor(&tmpEntry.descriptor, xmlPath);
+	} else
+	{
+		// This is a normal folder
+		initMenuEntry(&tmpEntry, path, &path[l+1], path, "", (u8*)folderIcon_bin, MENU_ENTRY_FOLDER);
+	}
 
 	addMenuEntryCopy(m, &tmpEntry);
 }

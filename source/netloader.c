@@ -352,6 +352,7 @@ int load3DSX(int sock, u32 remote) {
 
 	free(netloadedPath);
 	free(writebuffer);
+	ftruncate(fileno(file), ftell(file));
 	fclose(file);
 
 	if (response == 0) {
