@@ -9,9 +9,9 @@
 #include "smdh.h"
 #include "utils.h"
 
-#define DEFAULT_DIRECTORY "/3ds"
+#define DEFAULT_DIRECTORY "/3ds/"
 
-static char cwd[1024] = DEFAULT_DIRECTORY "/";
+static char cwd[1024] = DEFAULT_DIRECTORY;
 
 FS_Archive sdmcArchive;
 
@@ -209,7 +209,7 @@ void addDirectoryToMenu(menu_s* m, char* path)
 
 	// Check for old-style application folder
 	bool exists = false;
-	if (strcmp(path, DEFAULT_DIRECTORY)==0)
+	if (strcmp(cwd, DEFAULT_DIRECTORY)==0)
 	{
 		snprintf(execPath, 128, "%s/boot.3dsx", path);
 		exists = fileExists(execPath, &sdmcArchive);
