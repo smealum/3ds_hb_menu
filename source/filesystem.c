@@ -213,11 +213,11 @@ void addDirectoryToMenu(menu_s* m, char* path)
 	{
 		snprintf(execPath, 128, "%s/boot.3dsx", path);
 		exists = fileExists(execPath, &sdmcArchive);
-	}
-	if (!exists)
-	{
-		snprintf(execPath, 128, "%s/%s.3dsx", path, &path[l+1]);
-		exists = fileExists(execPath, &sdmcArchive);
+		if (!exists)
+		{
+			snprintf(execPath, 128, "%s/%s.3dsx", path, &path[l+1]);
+			exists = fileExists(execPath, &sdmcArchive);
+		}
 	}
 	if (exists)
 	{
