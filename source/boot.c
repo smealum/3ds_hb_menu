@@ -62,13 +62,17 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 	argbuffer[0] = 0;
 	argbuffer_length = sizeof(argbuffer);
 
-	argbuffer[0] = 1;
-	snprintf((char*)&argbuffer[1], sizeof(argbuffer) - 4, "sdmc:%s", executablePath);
+	if (!netloader_boot)
+	{
+		argbuffer[0] = 1;
+		snprintf((char*)&argbuffer[1], sizeof(argbuffer) - 4, "sdmc:%s", executablePath);
+	}
 
 	{
 		char *ptr = netloaded_commandline;
 		char *dst = (char*)&argbuffer[1];
-		dst += strlen(dst) + 1; // skip first argument
+		if (!netloader_boot)
+			dst += strlen(dst) + 1; // skip first argument
 
 		if(arg && *arg)
 		{
