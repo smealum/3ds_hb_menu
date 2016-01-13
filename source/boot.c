@@ -76,9 +76,39 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 
 		if(arg && *arg)
 		{
-			strcpy(dst, arg);
-			dst += strlen(arg) + 1;
-			argbuffer[0]++;
+
+			char c, *pstr, *str=arg, *endarg = arg+strlen(arg);
+
+			do
+			{
+				do
+				{
+					c = *str++;
+				} while ((c == ' ' || c == '\t') && str < endarg);
+
+				pstr = str-1;
+
+				if (c == '\"')
+				{
+					pstr++;
+					while(*str++ != '\"' && str < endarg);
+				}
+				else
+				{
+					do
+					{
+						c = *str++;
+					} while (c != ' ' && c != '\t' && str < endarg);
+				}
+
+				*(--str) = '\0';
+				str++;
+				strcpy(dst, pstr);
+				dst += strlen(dst) + 1;
+				argbuffer[0]++;
+
+			} while(str<endarg);
+
 		}
 		
 		if(netloader_boot)
