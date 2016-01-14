@@ -101,8 +101,11 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 					} while (c != ' ' && c != '\t' && str < endarg);
 				}
 
-				*(--str) = '\0';
-				str++;
+				if (str<endarg)
+				{
+					*(--str) = '\0';
+					str++;
+				}
 				strcpy(dst, pstr);
 				dst += strlen(dst) + 1;
 				argbuffer[0]++;
