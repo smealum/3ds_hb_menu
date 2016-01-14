@@ -8,7 +8,11 @@ endif
 
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
+export VER_MAJOR	:= 1
+export VER_MINOR	:= 1
+export VER_PATCH	:= 0
 
+export VERSTRING	:=	$(VER_MAJOR).$(VER_MINOR).$(VER_PATCH)
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
 # BUILD is the directory where object files & intermediate files will be placed
@@ -42,7 +46,7 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations -ffunction-sections \
 			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS
+CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DVERSION="$(VERSTRING)"
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
