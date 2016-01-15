@@ -8,6 +8,7 @@ endif
 
 TOPDIR ?= $(CURDIR)
 include $(DEVKITARM)/3ds_rules
+
 export VER_MAJOR	:= 1
 export VER_MINOR	:= 1
 export VER_PATCH	:= 0
@@ -46,7 +47,7 @@ CFLAGS	:=	-g -Wall -O2 -mword-relocations -ffunction-sections \
 			-fomit-frame-pointer -ffast-math \
 			$(ARCH)
 
-CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DVERSION="$(VERSTRING)"
+CFLAGS	+=	$(INCLUDE) -DARM11 -D_3DS -DVERSION=\"$(VERSTRING)\"
 
 CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++11
 
@@ -138,6 +139,7 @@ else
 
 DEPENDS	:=	$(OFILES:.o=.d)
 
+
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
@@ -147,6 +149,8 @@ all	:	$(OUTPUT).3dsx $(OUTPUT).smdh
 endif
 $(OUTPUT).3dsx	:	$(OUTPUT).elf
 $(OUTPUT).elf	:	$(OFILES)
+
+background.o: $(TOPDIR)/Makefile
 
 #---------------------------------------------------------------------------------
 # you need a rule like this for each extension you use as binary data

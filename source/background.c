@@ -8,8 +8,8 @@
 #include "logo_bin.h"
 #include "bubble_bin.h"
 
-#define xstr(a) str(a)
-#define str(a) #a
+//#define xstr(a) str(a)
+//#define str(a) #a
 
 #define BG_WATER_CONTROLPOINTS (100)
 #define BG_WATER_NEIGHBORHOODS (3)
@@ -126,7 +126,7 @@ void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	gfxDrawSpriteAlphaBlend(GFX_TOP, GFX_LEFT, (u8*)logo_bin, 113, 271, 64, 80);
 
 	// draw version number
-	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, xstr(VERSION), 240 - 200, 300);
+	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, VERSION, 240 - 200, 300);
 
 }
 
