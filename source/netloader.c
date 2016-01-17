@@ -275,7 +275,7 @@ int netloader_deactivate(void) {
 	if(netloader_udpfd >= 0)
 	{
 		closesocket(netloader_udpfd);
-		netloader_datafd = -1;
+		netloader_udpfd = -1;
 	}
 
 	return 0;
