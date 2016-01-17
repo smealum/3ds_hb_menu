@@ -15,8 +15,8 @@
 #define BG_WATER_NEIGHBORHOODS (3)
 #define BG_WATER_DAMPFACTOR (0.7f)
 #define BG_WATER_SPRINGFACTOR (0.85f)
-#define BG_WATER_WIDTH (500)
-#define BG_WATER_OFFSET (0)
+#define BG_WATER_WIDTH (550)
+#define BG_WATER_OFFSET (-50)
 
 static bubble_t bubbles[BUBBLE_COUNT];
 static waterEffect_s waterEffect;
@@ -67,8 +67,8 @@ void drawBubbles(void)
 	for(i = 0;i < BUBBLE_COUNT;i += 1)
 	{
 		// Then draw (no point in separating more because then we go through them all twice).
-		gfxDrawSpriteAlphaBlendFade((bubbles[i].y >= 240) ? (GFX_TOP) : (GFX_BOTTOM), GFX_LEFT, (u8*)bubble_bin, 32, 32, 
-			((bubbles[i].y >= 240) ? -64 : 0) + bubbles[i].y % 240, 
+		gfxDrawSpriteAlphaBlendFade((bubbles[i].y >= 240) ? (GFX_TOP) : (GFX_BOTTOM), GFX_LEFT, (u8*)bubble_bin, 32, 32,
+			((bubbles[i].y >= 240) ? -64 : 0) + bubbles[i].y % 240,
 			((bubbles[i].y >= 240) ? 0 : -40) + bubbles[i].x, bubbles[i].fade);
 	}
 }
@@ -129,4 +129,3 @@ void drawBackground(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, VERSION, 240 - 200, 300);
 
 }
-
