@@ -65,7 +65,7 @@ setting the current working directory if you already have data files in a partic
     CHOST=arm-none-eabi ./configure --static --prefix=$(PORTLIBS)
     make && make install
 
-Binaries of 3ds_hb_menu can be downloaded from http://wintermute.github.io/3ds_hb_menu.zip
+Binaries of 3ds_hb_menu can be downloaded from https://github.com/smealum/3ds_hb_menu/releases
 
 #### Contributing
 
