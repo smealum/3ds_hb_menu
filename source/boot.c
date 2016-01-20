@@ -94,6 +94,12 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 					while(*str++ != '\"' && str < endarg);
 				}
 				else
+				if (c == '\'')
+				{
+					pstr++;
+					while(*str++ != '\'' && str < endarg);
+				}
+				else
 				{
 					do
 					{
@@ -101,11 +107,17 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 					} while (c != ' ' && c != '\t' && str < endarg);
 				}
 
-				if (str<endarg)
+				str--;
+
+				if (str == (endarg - 1))
 				{
-					*(--str) = '\0';
-					str++;
+					if(*str == '\"' || *str == '\'') *(str++) = 0;
 				}
+				else
+				{
+					*(str++) = '\0';
+				}
+
 				strcpy(dst, pstr);
 				dst += strlen(dst) + 1;
 				argbuffer[0]++;
