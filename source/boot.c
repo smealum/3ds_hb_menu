@@ -111,7 +111,14 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 
 				if (str == (endarg - 1))
 				{
-					if(*str == '\"' || *str == '\'') *(str++) = 0;
+					if(*str == '\"' || *str == '\'')
+					{
+						*(str++) = 0;
+					}
+					else
+					{
+						str++;
+					}
 				}
 				else
 				{
