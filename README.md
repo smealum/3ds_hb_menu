@@ -33,18 +33,16 @@ Here is an example directory structure that hbmenu will have no trouble recogniz
 
 If hbmenu does not find an icon file to associate with a given 3dsx, it will display a default icon and the path to the executable instead of the actual metadata for that executable.
 
-Hbmenu also allows you to create "shortcuts" which are xml files containing a path to a 3dsx file and optional arguments to pass to the .3dsx. This file can also include a path to icon data as well as name, description and author text using tags as follows :-
+Hbmenu also allows you to create "shortcuts" which are xml files containing a path to a 3dsx file and optional arguments to pass to the .3dsx. This file can also include a path to icon data as well as name, description and author text using tags as follows :
 
-<shortcut>
-
-  - <executable>The path to the 3dsx file goes here.</executable>
-  - <icon>path to smdh icon data</icon>
-  - <arg>Place arguments to be passed to 3dsx here.</arg>
-  - <name>Name to display</name>
-  - <description>Description of homebrew app</description>
-  - <author>Name of the author</author>
-
-</shortcut>
+    <shortcut>
+        <executable>The path to the 3dsx file goes here.</executable>
+        <icon>path to smdh icon data</icon>
+        <arg>Place arguments to be passed to 3dsx here.</arg>
+        <name>Name to display</name>
+        <description>Description of homebrew app</description>
+        <author>Name of the author</author>
+    </shortcut>
 
 Arguments are space or tab separated but can use single or double quotes to contain whitespace.
 
