@@ -25,6 +25,8 @@ u8 charging;
 int rebootCounter;
 titleBrowser_s titleBrowser;
 
+u32 menuret_enabled = 0;
+
 static enum
 {
 	HBMENU_DEFAULT,
@@ -81,12 +83,26 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 	if(rebootCounter<257)
 	{
 		//about to reboot
-		drawError(GFX_BOTTOM,
-			"Reboot",
-			"    You're about to reboot your console into home menu.\n\n"
-			"                                                                                            A : Proceed\n"
-			"                                                                                            B : Cancel\n",
-			0);
+
+		if(!menuret_enabled)
+		{
+			drawError(GFX_BOTTOM,
+				"Reboot",
+				"    You're about to reboot your console into Home Menu.\n\n"
+				"                                                                                            A : Proceed\n"
+				"                                                                                            B : Cancel\n",
+				0);
+		}
+		else
+		{
+			drawError(GFX_BOTTOM,
+				"Reboot",
+				"    You're about to reboot your console into Home Menu.\n\n"
+				"                                                                                            A : Proceed\n"
+				"                                                                                            B : Cancel\n"
+				"                                                               X : Return to Home Menu without reboot.\n",
+				0);
+		}
 	}else if(!sdmcCurrent)
 	{
 		//no SD
@@ -212,6 +228,9 @@ void __appExit()
 
 int main()
 {
+	u32 menuret = 0;
+	Handle kill=0;
+
 	aptInit();
 	gfxInitDefault();
 	initFilesystem();
@@ -245,6 +264,8 @@ int main()
 	nextSdCheck = osGetTime()+250;
 
 	srand(svcGetSystemTick());
+
+	if(srvGetServiceHandle(&kill, "hb:kill")==0)menuret_enabled = 1;
 
 	rebootCounter=257;
 
@@ -345,6 +366,13 @@ int main()
 					APT_HardwareResetAsync();
 				aptCloseSession();
 				rebootCounter--;
+			}else if(hidKeysDown()&KEY_X)
+			{
+				if(menuret_enabled)
+				{
+					menuret = 1;
+					break;
+				}
 			}else if(hidKeysDown()&KEY_B)
 			{
 				rebootCounter++;
@@ -452,6 +480,14 @@ int main()
 	closeSDArchive();
 	exitFilesystem();
 	aptExit();
+
+	if(menuret)
+	{
+		srvExit();
+
+		svcSignalEvent(kill);
+		svcExitProcess();
+	}
 
 	if (!strcmp(me->executablePath, REGIONFREE_PATH) && regionFreeAvailable && !netloader_boot)return regionFreeRun();
 
