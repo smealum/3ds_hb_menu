@@ -98,9 +98,9 @@ void renderFrame(u8 bgColor[3], u8 waterBorderColor[3], u8 waterColor[3])
 			drawError(GFX_BOTTOM,
 				"Reboot",
 				"    You're about to reboot your console into Home Menu.\n\n"
-				"                                                                                            A : Proceed\n"
-				"                                                                                            B : Cancel\n"
-				"                                                               X : Return to Home Menu without reboot.\n",
+				"                                                                    A : Proceed\n"
+				"                                                                    B : Cancel\n"
+				"                                                                    X : Return to Home Menu (no reboot)\n",
 				0);
 		}
 	}else if(!sdmcCurrent)
