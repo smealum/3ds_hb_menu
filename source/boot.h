@@ -6,9 +6,9 @@
 #include "titles.h"
 
 extern int targetProcessId;
-extern titleInfo_s target_title;
 
 bool isNinjhax2(void);
+void bootSetTargetTitle(titleInfo_s info);
 int bootApp(char* executablePath, executableMetadata_s* em, char* arg);
 
 #endif

@@ -1,8 +1,10 @@
 #include <3ds.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "mmap.h"
 #include "boot.h"
 #include "netloader.h"
 #include "filesystem.h"
@@ -11,6 +13,7 @@ extern void (*__system_retAddr)(void);
 
 static Handle hbFileHandle;
 static u32 argbuffer[0x100];
+static u32 mmap[0x40];
 static u32 argbuffer_length = 0;
 
 // ninjhax 1.x
@@ -33,17 +36,44 @@ typedef struct
 void (*callBootloader_2x)(Handle file, u32* argbuf, u32 arglength) = (void*)0x00100000;
 void (*callBootloaderNewProcess_2x)(int processId, u32* argbuf, u32 arglength) = (void*)0x00100008;
 void (*callBootloaderRunTitle_2x)(u8 mediatype, u32* argbuf, u32 argbuflength, u32 tid_low, u32 tid_high) = (void*)0x00100010;
+void (*callBootloaderRunTitleCustom_2x)(u8 mediatype, u32* argbuf, u32 argbuflength, u32 tid_low, u32 tid_high, memorymap_t* mmap) = (void*)0x00100014;
 void (*getBestProcess_2x)(u32 sectionSizes[3], bool* requirements, int num_requirements, processEntry_s* out, int out_size, int* out_len) = (void*)0x0010000C;
 
 int targetProcessId = -1;
 titleInfo_s target_title;
+bool custom_map = false;
+
+memorymap_t test_map =
+	{
+		{
+			3,
+			0x160000,
+			0x6ed000,
+			0x0,
+			0x500000, // processLinearOffset
+			0x1037e0, // processHookAddress
+			0x105000, // processAppCodeAddress
+			0x00182200, 0x00040000, 0x1,
+			{false, false, false, false, false,
+				false, false, false, false, false, false, false, false, false, false, false},
+			},
+		{
+			{0x100000, 0x8000, 0x4f8000},
+			{0x5f8000, - 0xf0000, 0xf0000},
+			{0x6e8000, - 0xf5000, 0x5000},
+		}
+	};
+
 
 static void launchFile_2x(void)
 {
 	// jump to bootloader
-	if(targetProcessId == -1)callBootloader_2x(hbFileHandle, argbuffer, argbuffer_length);
-	else if(targetProcessId == -2)callBootloaderRunTitle_2x(target_title.mediatype, argbuffer, argbuffer_length, target_title.title_id & 0xffffffff, (target_title.title_id >> 32) & 0xffffffff);
-	else callBootloaderNewProcess_2x(targetProcessId, argbuffer, argbuffer_length);
+	if(targetProcessId == -1) callBootloader_2x(hbFileHandle, argbuffer, argbuffer_length);
+	else if(targetProcessId == -2)
+	{
+		if(custom_map) callBootloaderRunTitleCustom_2x(target_title.mediatype, argbuffer, argbuffer_length, target_title.title_id & 0xffffffff, (target_title.title_id >> 32) & 0xffffffff, (memorymap_t*)&mmap);
+		else callBootloaderRunTitle_2x(target_title.mediatype, argbuffer, argbuffer_length, target_title.title_id & 0xffffffff, (target_title.title_id >> 32) & 0xffffffff);
+	}else callBootloaderNewProcess_2x(targetProcessId, argbuffer, argbuffer_length);
 }
 
 bool isNinjhax2(void)
@@ -54,6 +84,26 @@ bool isNinjhax2(void)
 		hbExit();
 		return false;
 	}else return true;
+}
+
+void bootSetTargetTitle(titleInfo_s info)
+{
+	target_title = info;
+	targetProcessId = -2;
+	custom_map = false;
+
+	static char path[256];
+	snprintf(path, 255, "sdmc:/mmap/%08X%08X.xml", (unsigned int)((target_title.title_id >> 32) & 0xffffffff), (unsigned int)(target_title.title_id & 0xffffffff));
+	memorymap_t* _mmap = loadMemoryMap(path);
+	if(_mmap)
+	{
+		_mmap->header.processHookTidLow = target_title.title_id & 0xffffffff;
+		_mmap->header.processHookTidHigh = (target_title.title_id >> 32) & 0xffffffff;
+		_mmap->header.mediatype = target_title.mediatype;
+		memcpy(mmap, _mmap, size_memmap(*_mmap));
+		free(_mmap);
+		custom_map = true;
+	}
 }
 
 int bootApp(char* executablePath, executableMetadata_s* em, char* arg)

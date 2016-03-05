@@ -13,6 +13,7 @@
 #include "regionfree.h"
 #include "boot.h"
 #include "titles.h"
+#include "mmap.h"
 
 bool brewMode;
 bool sdmcCurrent;
@@ -52,16 +53,16 @@ int debugValues[100];
 // {
 // 	char str[256];
 // 	sprintf(str, "hello3 %08X %d %d %d %d %d %d %d\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n%08X %08X %08X %08X\n\n", debugValues[50], debugValues[51], debugValues[52], debugValues[53], debugValues[54], debugValues[55], debugValues[56], debugValues[57], debugValues[58], debugValues[59], debugValues[60], debugValues[61], debugValues[62], debugValues[63], debugValues[64], debugValues[65], debugValues[66], debugValues[67], debugValues[68], debugValues[69]);
-// 	menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
-// 	if(me && me->descriptor.numRequestedServices)
-// 	{
-// 		scanMenuEntry(me);
-// 		executableMetadata_s* em = &me->descriptor.executableMetadata;
-// 		processEntry_s out[4];
-// 		int out_len = 0;
-// 		_getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
-// 		sprintf(str, "hello3 %s %d %d %d %d\n", me->descriptor.requestedServices[0].name, out_len, out[0].processId, out[0].capabilities[4], em->servicesThatMatter[4]);
-// 	}
+// 	// menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+// 	// if(me && me->descriptor.numRequestedServices)
+// 	// {
+// 	// 	scanMenuEntry(me);
+// 	// 	executableMetadata_s* em = &me->descriptor.executableMetadata;
+// 	// 	processEntry_s out[4];
+// 	// 	int out_len = 0;
+// 	// 	_getBestProcess_2x(em->sectionSizes, (bool*)em->servicesThatMatter, NUM_SERVICESTHATMATTER, out, 4, &out_len);
+// 	// 	sprintf(str, "hello3 %s %d %d %d %d\n", me->descriptor.requestedServices[0].name, out_len, out[0].processId, out[0].capabilities[4], em->servicesThatMatter[4]);
+// 	// }
 // 	gfxDrawText(GFX_TOP, GFX_LEFT, NULL, str, 48, 100);
 // }
 
@@ -265,7 +266,7 @@ int main()
 
 	srand(svcGetSystemTick());
 
-	if(srvGetServiceHandle(&kill, "hb:kill")==0)menuret_enabled = 1;
+	if(srvGetServiceHandle(&kill, "hb:kill")==0) menuret_enabled = 1;
 
 	rebootCounter=257;
 
@@ -298,14 +299,14 @@ int main()
 
 		updateBackground();
 
-		menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
-		debugValues[50] = me->descriptor.numTargetTitles;
-		debugValues[51] = me->descriptor.selectTargetProcess;
-		if(me->descriptor.numTargetTitles)
-		{
-			debugValues[58] = (me->descriptor.targetTitles[0].tid >> 32) & 0xFFFFFFFF;
-			debugValues[59] = me->descriptor.targetTitles[0].tid & 0xFFFFFFFF;
-		}
+		// menuEntry_s* me = getMenuEntry(&menu, menu.selectedEntry);
+		// debugValues[50] = me->descriptor.numTargetTitles;
+		// debugValues[51] = me->descriptor.selectTargetProcess;
+		// if(me->descriptor.numTargetTitles)
+		// {
+		// 	debugValues[58] = (me->descriptor.targetTitles[0].tid >> 32) & 0xFFFFFFFF;
+		// 	debugValues[59] = me->descriptor.targetTitles[0].tid & 0xFFFFFFFF;
+		// }
 
 		if(hbmenu_state == HBMENU_NETLOADER_ACTIVE){
 			if(hidKeysDown()&KEY_B){
@@ -349,8 +350,7 @@ int main()
 		}else if(hbmenu_state == HBMENU_TITLESELECT){
 			if(hidKeysDown()&KEY_A && titleBrowser.selected)
 			{
-				targetProcessId = -2;
-				target_title = *titleBrowser.selected;
+				bootSetTargetTitle(*titleBrowser.selected);
 				break;
 			}
 			else if(hidKeysDown()&KEY_B)hbmenu_state = HBMENU_DEFAULT;
@@ -423,8 +423,7 @@ int main()
 
 						if(ret)
 						{
-							targetProcessId = -2;
-							target_title = *ret;
+							bootSetTargetTitle(*ret);
 							break;
 						}
 
