@@ -47,7 +47,7 @@ Result loadTitleInfoIcon(titleInfo_s* ti)
 	Handle fileHandle;
 	u32 archivePath[] = {ti->title_id & 0xFFFFFFFF, (ti->title_id >> 32) & 0xFFFFFFFF, ti->mediatype, 0x00000000};
 	static const u32 filePath[] = {0x00000000, 0x00000000, 0x00000002, 0x6E6F6369, 0x00000000};	
-	Result ret = FSUSER_OpenFileDirectly(&fileHandle, (FS_Archive){ARCHIVE_SAVEDATA_AND_CONTENT, (FS_Path){PATH_BINARY, 0x10, (u8*)archivePath}}, (FS_Path){PATH_BINARY, 0x14, (u8*)filePath}, FS_OPEN_READ, 0);
+	Result ret = FSUSER_OpenFileDirectly(&fileHandle, ARCHIVE_SAVEDATA_AND_CONTENT, (FS_Path){PATH_BINARY, 0x10, (u8*)archivePath}, (FS_Path){PATH_BINARY, 0x14, (u8*)filePath}, FS_OPEN_READ, 0);
 
 	if(ret)
 	{
@@ -126,7 +126,7 @@ int populateTitleList(titleList_s* tl)
 			return 1;
 		}
 
-		ret = AM_GetTitleIdList(tl->mediatype, num, tmp);
+		ret = AM_GetTitleList(&num, tl->mediatype, num, tmp);
 
 		if(!ret)
 		{

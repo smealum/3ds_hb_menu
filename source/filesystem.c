@@ -47,13 +47,12 @@ void exitFilesystem(void)
 
 void openSDArchive()
 {
-	sdmcArchive=(FS_Archive){0x00000009, (FS_Path){PATH_EMPTY, 1, (u8*)""}};
-	FSUSER_OpenArchive(&sdmcArchive);
+	FSUSER_OpenArchive(&sdmcArchive, ARCHIVE_SDMC, (FS_Path){PATH_EMPTY, 1, (u8*)""});
 }
 
 void closeSDArchive()
 {
-	FSUSER_CloseArchive(&sdmcArchive);
+	FSUSER_CloseArchive(sdmcArchive);
 }
 
 int loadFile(char* path, void* dst, FS_Archive* archive, u64 maxSize)

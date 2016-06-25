@@ -200,7 +200,7 @@ int bootApp(char* executablePath, executableMetadata_s* em, char* arg)
 
 	// open file that we're going to boot up
 	fsInit();
-	FSUSER_OpenFileDirectly(&hbFileHandle, sdmcArchive, fsMakePath(PATH_ASCII, executablePath), FS_OPEN_READ, 0);
+	FSUSER_OpenFileDirectly(&hbFileHandle, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, executablePath), FS_OPEN_READ, 0);
 	fsExit();
 
 	// figure out the preferred way of running the 3dsx
