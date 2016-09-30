@@ -246,9 +246,7 @@ int main()
 	osSetSpeedupEnable(true);
 
 	// offset potential issues caused by homebrew that just ran
-	aptOpenSession();
 	APT_SetAppCpuTimeLimit(0);
-	aptCloseSession();
 
 	initBackground();
 	initErrors();
@@ -362,9 +360,7 @@ int main()
 			if(hidKeysDown()&KEY_A)
 			{
 				//reboot
-				aptOpenSession();
-					APT_HardwareResetAsync();
-				aptCloseSession();
+				APT_HardwareResetAsync();
 				rebootCounter--;
 			}else if(hidKeysDown()&KEY_X)
 			{
