@@ -293,6 +293,11 @@ int load3DSX(int sock, u32 remote) {
 		return -1;
 	}
 
+	if (namelen >= sizeof(filename)-1) {
+		netloader_socket_error("Filename length is too large",errno);
+		return -1;
+	}
+
 	len = recvall(sock, filename, namelen, 0);
 
 	if (len != namelen) {
