@@ -1,3 +1,7 @@
+### This is the hbmenu 1.x codebase, which is not maintained anymore and is kept for archival/historic purposes.
+
+See [new-hbmenu](https://github.com/fincs/new-hbmenu) for the latest version of the Homebrew Launcher.
+
 # The Homebrew Launcher
 
 #### Presentation
